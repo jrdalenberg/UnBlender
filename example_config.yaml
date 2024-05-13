@@ -1,0 +1,66 @@
+# Example config file for UnBlender pipeline
+
+# Run with: snakemake -c1 --configfile configfilename
+# from the directory that contains the Snakemake file 
+
+config_filename: "/home/user/path/to/example_config.yaml" # absolute path to file
+sample_type: "parenchyma" # options: parenchyma, bronchial_brush, nasal_brush, bronchial_biopsy
+output_dir: "/home/user/path/to/output_dir/" # absolute path to directory
+filter_reference: 'no_filter' # options: 'no_filter' or absolute path to file
+HLCA_file: "./HLCA_file.h5ad" # path to the HLCA input file
+
+# Docker details
+email: "my.email.address@example.com" # The email address that matches your CIBERSORTx token
+token: "48297a506d1ebd24c3caf82b95f73108" # Example, you'll need to request a token for your own use!
+
+# Cell type selection to test
+cell_types:
+  - - "ann_level_3_clean"
+    - "EC arterial"
+
+  - - "ann_level_3_clean"
+    - "EC capillary"
+
+  - - "ann_level_3_clean"
+    - "EC venous"
+
+  - - "ann_level_2_clean"
+    - "Lymphatic EC"
+
+  - - "ann_level_3_clean"
+    - - "Basal"
+      - "Secretory"
+
+  - - "ann_level_3_clean"
+    - "Multiciliated lineage"
+
+  - - "ann_level_3_clean"
+    - "AT2"
+
+  - - "ann_level_3_clean"
+    - "B cell lineage"
+
+  - - "ann_level_3_clean"
+    - - "Innate lymphoid cell NK"
+      - "T cell lineage"
+
+  - - "ann_level_3_clean"
+    - "Dendritic cells"
+
+  - - "ann_level_4_clean"
+    - "Alveolar macrophages"
+
+  - - "ann_level_4_clean"
+    - "Interstitial macrophages"
+
+  - - "ann_level_2_clean"
+    - "Fibroblast lineage"
+
+  - - "ann_level_2_clean"
+    - "Smooth muscle"
+
+  - - "ann_level_3_clean"
+    - "Mast cells"
+
+  - - "ann_level_3_clean"
+    - "Monocytes"
