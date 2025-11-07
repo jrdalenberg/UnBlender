@@ -46,7 +46,7 @@ install_and_load_cran_packages <- function(req_file, lib_path) {
   # Install what is missing
   if (length(missing) > 0) {
     log_msg("Installing missing packages: ", paste(missing, collapse = ", "))
-    install.packages(missing, lib = lib_path, clean = TRUE, type = "source")
+    install.packages(missing, lib = lib_path, clean = TRUE)
   }
 
   suppressPackageStartupMessages(
