@@ -475,9 +475,9 @@ create_subset_so <- function(so_small, mytissue){
 ####### GROUND TRUTH EVALUATION  #########
 
 create_ground_truth <- function(so, tissue, user_clusters, sample_type){
-  
+
   gt <- so@meta.data %>% as_tibble(rownames = "barcode") %>% 
-    select(barcode, sample, anatomical_region_coarse, ann_level_4) %>% 
+    dplyr::select(barcode, sample, anatomical_region_coarse, ann_level_4) %>% 
     mutate(across(everything(), as.character)) %>% 
   #  filter(anatomical_region_coarse == tissue) %>% 
     mutate(ann_level_4 = gsub(ann_level_4,pattern="^\\d_",replace="")) %>% 
@@ -496,7 +496,7 @@ create_ground_truth <- function(so, tissue, user_clusters, sample_type){
     mutate(total_cells = n())
   
   gt <- gt %>% mutate(percentage_true = cluster_count/total_cells) %>% 
-    select(cluster_name, sample_id, percentage_true) %>% distinct()
+    dplyr::select(cluster_name, sample_id, percentage_true) %>% distinct()
   
   gt
 }
@@ -577,9 +577,10 @@ plot_corr_df <- function(correlation_df, show_sample_ids=FALSE, show_se = FALSE)
 }
 
 plot_decision_cor <- function(correlation_df, flip=FALSE){
-  tp <- correlation_df %>% select(cluster_name, mycor) %>% distinct()
+  tp <- correlation_df %>% dplyr::select(cluster_name, mycor) %>% distinct()
   
   p <-ggplot(tp, aes(x = reorder(cluster_name, mycor), y = mycor))
+
  
   p <-p + annotate(geom='rect', ymin=0.7, ymax=Inf, xmin = -Inf, xmax = Inf, 
            fill='darkolivegreen2', alpha=1) 
@@ -595,12 +596,11 @@ plot_decision_cor <- function(correlation_df, flip=FALSE){
   p <- p + theme(strip.text = element_text(size=14))
   p <- p + theme(axis.title = element_text(size=14))
   p
-  
 }
 
 
 plot_decision_mape <- function(mape, flip=FALSE){
-  tp <- mape %>% select(cluster_name, mape) %>% distinct()
+  tp <- mape %>% dplyr::select(cluster_name, mape) %>% distinct()
   
   p <-ggplot(tp, aes(x = reorder(cluster_name,mape), y = mape))
   
@@ -629,7 +629,7 @@ plot_decision_mape <- function(mape, flip=FALSE){
 ####### MUSIC EVALUATION VISUALISATION #######
 
 rawdata_music<- function(x, pivot_it=F){
-  x <- x %>% select(-resname)
+  x <- x %>% dplyr::select(-resname)
   if (pivot_it==T){
     x <- x %>% pivot_wider(names_from = "cell_type", values_from = "fraction")
   }
