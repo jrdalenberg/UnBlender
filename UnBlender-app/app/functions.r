@@ -427,10 +427,10 @@ create_input_sce <- function(start_sce, new_clusters){
                         )
  # print(toreplace)
   tomatch <- tibble(level4 = start_sce$ann_level_4)
-  tomatch <- tomatch %>%  mutate(level4 = gsub(level4,pattern="^\\d_",replace="")) %>% 
+  tomatch <- tomatch %>%  dplyr::mutate(level4 = gsub(level4,pattern="^\\d_",replace="")) %>% 
   left_join(new_clusters, by = c("level4" = "cluster_member")) %>% 
-  mutate(cluster_name = as.character(cluster_name))   %>% 
-  mutate(cluster_name = ifelse(is.na(cluster_name),"other",cluster_name))
+  dplyr::mutate(cluster_name = as.character(cluster_name))   %>% 
+  dplyr::mutate(cluster_name = ifelse(is.na(cluster_name),"other",cluster_name))
   
   #print(tomatch)
   start_sce$new_clusters <- tomatch %>% pull(cluster_name)
@@ -478,24 +478,24 @@ create_ground_truth <- function(so, tissue, user_clusters, sample_type){
 
   gt <- so@meta.data %>% as_tibble(rownames = "barcode") %>% 
     dplyr::select(barcode, sample, anatomical_region_coarse, ann_level_4) %>% 
-    mutate(across(everything(), as.character)) %>% 
+    dplyr::mutate(across(everything(), as.character)) %>% 
   #  filter(anatomical_region_coarse == tissue) %>% 
-    mutate(ann_level_4 = gsub(ann_level_4,pattern="^\\d_",replace="")) %>% 
+    dplyr::mutate(ann_level_4 = gsub(ann_level_4,pattern="^\\d_",replace="")) %>% 
     dplyr::rename(sample_id=sample)
   
   #Update the gt to reflect the new clusters
   
   gt <- gt %>% left_join(user_clusters, by = c("ann_level_4"= "cluster_member" )) %>% 
-    mutate(cluster_name = ifelse(is.na(cluster_name), "other",cluster_name))
+    dplyr::mutate(cluster_name = ifelse(is.na(cluster_name), "other",cluster_name))
   
   # Now add the count per cluster
   gt <- gt %>% group_by(sample_id,cluster_name) %>% 
-    mutate(cluster_count = n())
+    dplyr::mutate(cluster_count = n())
   
   gt <- gt %>% ungroup() %>% group_by(sample_id) %>% 
-    mutate(total_cells = n())
+    dplyr::mutate(total_cells = n())
   
-  gt <- gt %>% mutate(percentage_true = cluster_count/total_cells) %>% 
+  gt <- gt %>% dplyr::mutate(percentage_true = cluster_count/total_cells) %>% 
     dplyr::select(cluster_name, sample_id, percentage_true) %>% distinct()
   
   gt
@@ -525,10 +525,10 @@ eval_ground_truth <- function(music_results, ground_truth){
   
   eval_results <- music_data %>% full_join(gt_narrow, by =c("sample_id"="sample_id", 
                                                             "cluster_name" = "cluster_name")) %>% 
-    mutate(percentage_found = ifelse(is.na(percentage_found), 0.01 ,percentage_found),
+    dplyr::mutate(percentage_found = ifelse(is.na(percentage_found), 0.01 ,percentage_found),
            percentage_true = ifelse(is.na(percentage_true), 0.01 ,percentage_true)
     ) %>% 
-    mutate(prop_error = (percentage_true-percentage_found)/percentage_true) 
+    dplyr::mutate(prop_error = (percentage_true-percentage_found)/percentage_true) 
   
   # Get mean absolute prop error
   
@@ -540,7 +540,7 @@ eval_ground_truth <- function(music_results, ground_truth){
   
   # Get the correlations
   eval_results <- eval_results %>% group_by(cluster_name) %>% 
-    mutate(iqr_high =  quantile(percentage_true, probs=.75) %>% as.numeric(),
+    dplyr::mutate(iqr_high =  quantile(percentage_true, probs=.75) %>% as.numeric(),
            iqr_low  =  quantile(percentage_true, probs=.25) %>% as.numeric(),
            H = 1.5*IQR(percentage_true)
     ) 
@@ -549,7 +549,7 @@ eval_ground_truth <- function(music_results, ground_truth){
     filter(percentage_true < iqr_high + H,
            percentage_true > iqr_low - H,) %>% 
     group_by(cluster_name) %>% 
-    mutate(mycor= floor(100*cor(percentage_found, percentage_true))/100)
+    dplyr::mutate(mycor= floor(100*cor(percentage_found, percentage_true))/100)
   
   
   

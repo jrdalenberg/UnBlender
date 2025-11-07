@@ -288,7 +288,7 @@ output$mytree <- renderTree({
 
      myclusters <- user_data$collections %>% stack() %>%
      dplyr::rename(cluster_member=values, cluster_name = ind) %>%
-     mutate(across(everything(), as.character)) %>% distinct()
+     dplyr::mutate(across(everything(), as.character)) %>% distinct()
  #
      gt <- create_ground_truth(so     = so_small_sub,
                             user_clusters = myclusters)
