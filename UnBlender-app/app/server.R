@@ -288,7 +288,7 @@ output$mytree <- renderTree({
 
      myclusters <- user_data$collections %>% stack() %>%
      dplyr::rename(cluster_member=values, cluster_name = ind) %>%
-     mutate(across(everything(), as.character)) %>% distinct()
+     dplyr::mutate(across(everything(), as.character)) %>% distinct()
  #
      gt <- create_ground_truth(so     = so_small_sub,
                             user_clusters = myclusters)
@@ -387,7 +387,7 @@ output$mytree <- renderTree({
    output$gt_stats <- DT::renderDataTable({
      req(user_data$eval_results)
      mape <- user_data$eval_results[["mape"]]
-     mycor<- user_data$eval_results[["corr_df"]] %>% select(cluster_name,mycor) %>% distinct()
+     mycor<- user_data$eval_results[["corr_df"]] %>% dplyr::select(cluster_name,mycor) %>% distinct()
 
 
      toshow <- mape %>% inner_join(mycor, by = "cluster_name")
@@ -404,7 +404,7 @@ output$mytree <- renderTree({
      #print
      toshow <- user_data$eval_results[["prop_error"]] %>%
      #  filter(cluster_name !="other") %>%
-       select(sample_id, cluster_name, percentage_found, percentage_true,prop_error)
+       dplyr::select(sample_id, cluster_name, percentage_found, percentage_true,prop_error)
      toshow <- toshow %>% dplyr::rename(sample =sample_id, collection = cluster_name,
                                  "True fraction"= percentage_true,
                                  "Estimated fraction" =percentage_found,
@@ -433,7 +433,7 @@ output$mytree <- renderTree({
 
    output$correlation_table<- DT::renderDataTable({
      #print(user_data$eval_results)
-    to_show <- user_data$eval_results[["corr_df"]] %>% select(cluster_name,mycor) %>% distinct()
+    to_show <- user_data$eval_results[["corr_df"]] %>% dplyr::select(cluster_name,mycor) %>% distinct()
     to_show <- to_show %>% dplyr::rename(correlation = mycor)
       DT::datatable( to_show, rownames = FALSE,  selection = list(mode = "single", selected=1))
     })
@@ -630,7 +630,7 @@ output$mytree <- renderTree({
 
       df2 <- df %>% dplyr::filter(duprow==FALSE, !is.na(gene))
       print(df2[1:4,1:4])
-      lmx_bulk <- as.matrix(df2 %>% select(-duprow) %>%  column_to_rownames("gene"))
+      lmx_bulk <- as.matrix(df2 %>% dplyr::select(-duprow) %>%  column_to_rownames("gene"))
       print(lmx_bulk[1:4,1:4])
 
      # lmx_bulk <- data.matrix(as_tibble(df) %>% column_to_rownames("V1"))
@@ -701,7 +701,7 @@ output$mytree <- renderTree({
      req(user_data$music_results)
      tp <-user_data$music_results
      toshow <- rawdata_music(tp, pivot_it = input$pivot_music)
-     mycolnames <- toshow %>% select(!any_of(c("cell_type", "sample_id")))
+     mycolnames <- toshow %>% dplyr::select(!any_of(c("cell_type", "sample_id")))
      print(names(mycolnames))
      DT::datatable(toshow, rownames = F, filter="top", options = list(scrollX = TRUE)) %>% formatRound(columns = names(mycolnames),digits=3)
   })
