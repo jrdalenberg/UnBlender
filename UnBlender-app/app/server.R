@@ -9,7 +9,6 @@ library(data.table)
 # 
 library(MuSiC)
 library(SingleCellExperiment)
-library(Seurat)
 library(tibble)
 # 
 # 

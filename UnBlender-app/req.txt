@@ -1,5 +1,4 @@
 devtools
-Seurat
 tidyr
 dplyr
 shiny
