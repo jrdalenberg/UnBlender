@@ -1,16 +1,6 @@
-devtools
-tidyr
-dplyr
-shiny
-shinydashboard
-shinyjs
-shinyjqui
-shinyTree
-DT
+devtool
 writexl
-ggplot2
 data.table
-tibble
 nnls
 MCMCpack
 e1071
