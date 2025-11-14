@@ -1,18 +1,13 @@
 ##### LIBRARY LOADING #####
-
 library(shiny)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(data.table)
-# #library(spsComps)
-# 
 library(MuSiC)
 library(SingleCellExperiment)
 library(tibble)
-# 
-# 
-# 
+
 # ##### CONFIGURATION #####
 # 
 source("config.r")
