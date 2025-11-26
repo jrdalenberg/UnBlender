@@ -6,40 +6,51 @@ library(MuSiC)
 
 ##### HTML functions ######
 
-
 #theme_cyberlung
 
-no_tissue_selected_error <- function(x){
+no_tissue_selected_error <- function(x) {
   error_message("Please select a tissue for building a cell collection.")
 }
 
-no_cells_selected_error <- function(x){
-  error_message("Please select cells to add to your cell collection before running the evaluation.")
-}
-
-deconv_error <- function(x){
-  error_message(paste0(
-    "The deconvolution caused an error. The error message is shown below.<br>",x)
+no_cells_selected_error <- function(x) {
+  error_message(
+    "Please select cells to add to your cell collection before running the evaluation."
   )
 }
-no_deconvolution_results<- function(x){
- error_message("No deconvolution results yet. Please run a deconvolution first.")
+
+deconv_error <- function(x) {
+  error_message(paste0(
+    "The deconvolution caused an error. The error message is shown below.<br>",
+    x
+  ))
+}
+no_deconvolution_results <- function(x) {
+  error_message(
+    "No deconvolution results yet. Please run a deconvolution first."
+  )
 }
 
-error_message<- function(x){
-  HTML(paste0('<div style="color:#FF0000;">',x,"</div>"))
-  
+error_message <- function(x) {
+  HTML(paste0('<div style="color:#FF0000;">', x, "</div>"))
 }
 
-instruction_message<- function(x){
-  HTML(paste0('<div class="instruction_message">',x,"</div>"))
-  
+instruction_message <- function(x) {
+  HTML(paste0('<div class="instruction_message">', x, "</div>"))
 }
 
-mybox <- function (..., title = NULL, footer = NULL, status = 'primary', solidHeader = TRUE,
-                   background = NULL, width = 12, height = NULL, collapsible = FALSE,
-                   collapsed = FALSE, help=NULL)
-{
+mybox <- function(
+  ...,
+  title = NULL,
+  footer = NULL,
+  status = 'primary',
+  solidHeader = TRUE,
+  background = NULL,
+  width = 12,
+  height = NULL,
+  collapsible = FALSE,
+  collapsed = FALSE,
+  help = NULL
+) {
   boxClass <- "box"
   if (solidHeader || !is.null(background)) {
     boxClass <- paste(boxClass, "box-solid")
@@ -66,64 +77,106 @@ mybox <- function (..., title = NULL, footer = NULL, status = 'primary', solidHe
   collapseTag <- NULL
   if (collapsible) {
     buttonStatus <- status #%OR% "default"
-    collapseIcon <- if (collapsed)
+    collapseIcon <- if (collapsed) {
       "plus"
-    else "minus"
-    collapseTag <- div(class = "box-tools pull-right", tags$button(class = paste0("btn btn-box-tool"),
-                                                                   `data-widget` = "collapse", shiny::icon(collapseIcon)))
+    } else {
+      "minus"
+    }
+    collapseTag <- div(
+      class = "box-tools pull-right",
+      tags$button(
+        class = paste0("btn btn-box-tool"),
+        `data-widget` = "collapse",
+        shiny::icon(collapseIcon)
+      )
+    )
   }
-  
+
   helpTag <- NULL
-  if (!is.null(help)){
-    helpTag<- HTML(paste0('<div class="pull-right" style="display:block" onClick=toggle("',help,'")>',
-                          '<i class="fa fa-question-circle" style="font-size:20px;" aria-hidden="false"></i></div>'))
+  if (!is.null(help)) {
+    helpTag <- HTML(paste0(
+      '<div class="pull-right" style="display:block" onClick=toggle("',
+      help,
+      '")>',
+      '<i class="fa fa-question-circle" style="font-size:20px;" aria-hidden="false"></i></div>'
+    ))
   }
-  
-  
+
   headerTag <- NULL
   if (!is.null(titleTag) || !is.null(collapseTag)) {
-    headerTag <- div(class = "box-header", titleTag, HTML(helpTag),collapseTag)
+    headerTag <- div(class = "box-header", titleTag, HTML(helpTag), collapseTag)
   }
-  div(class = if (!is.null(width))
-    paste0("col-m-", width),
-    div(class = boxClass, style = if (!is.null(style))
-      style, headerTag, div(class = "box-body", ...), if (!is.null(footer))
-        div(class = "box-footer", footer)))
+  div(
+    class = if (!is.null(width)) {
+      paste0("col-m-", width)
+    },
+    div(
+      class = boxClass,
+      style = if (!is.null(style)) {
+        style
+      },
+      headerTag,
+      div(class = "box-body", ...),
+      if (!is.null(footer)) {
+        div(class = "box-footer", footer)
+      }
+    )
+  )
 }
 
 
 ##### MUSIC FUNCTIONS #######
 
-music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples, 
-          select.ct = NULL, cell_size = NULL, ct.cov = FALSE, verbose = TRUE, 
-          iter.max = 1000, nu = 1e-04, eps = 0.01, centered = FALSE, 
-          normalize = FALSE, ...) 
-{
+music_prop2 <- function(
+  bulk.mtx,
+  sc.sce,
+  markers = NULL,
+  clusters,
+  samples,
+  select.ct = NULL,
+  cell_size = NULL,
+  ct.cov = FALSE,
+  verbose = TRUE,
+  iter.max = 1000,
+  nu = 1e-04,
+  eps = 0.01,
+  centered = FALSE,
+  normalize = FALSE,
+  ...
+) {
   print("I am here")
-  print(bulk.mtx[1:4,1:2])
+  print(bulk.mtx[1:4, 1:2])
   bulk.gene = rownames(bulk.mtx)[rowMeans(bulk.mtx) != 0]
   print(bulk.gene[1:10])
   bulk.mtx = bulk.mtx[bulk.gene, ]
-  print(bulk.mtx[1:4,1:4])
+  print(bulk.mtx[1:4, 1:4])
   if (is.null(markers)) {
     sc.markers = bulk.gene
-  }
-  else {
+  } else {
     sc.markers = intersect(bulk.gene, unlist(markers))
   }
   print("I am here")
-  sc.basis = music_basis2(sc.sce, non.zero = TRUE, markers = sc.markers, 
-                         clusters = clusters, samples = samples, select.ct = select.ct, 
-                         cell_size = cell_size, ct.cov = ct.cov, verbose = verbose)
+  sc.basis = music_basis2(
+    sc.sce,
+    non.zero = TRUE,
+    markers = sc.markers,
+    clusters = clusters,
+    samples = samples,
+    select.ct = select.ct,
+    cell_size = cell_size,
+    ct.cov = ct.cov,
+    verbose = verbose
+  )
   print("I am here")
   cm.gene = intersect(rownames(sc.basis$Disgn.mtx), bulk.gene)
   if (is.null(markers)) {
-    if (length(cm.gene) < 0.2 * min(length(bulk.gene), nrow(sc.sce))) 
+    if (length(cm.gene) < 0.2 * min(length(bulk.gene), nrow(sc.sce))) {
       stop("Too few common genes!")
-  }
-  else {
-    if (length(cm.gene) < 0.2 * length(unlist(markers))) 
+    }
+  } else {
+    if (length(cm.gene) < 0.2 * length(unlist(markers))) {
       stop("Too few common genes!")
+    }
   }
   if (verbose) {
     message(paste("Used", length(cm.gene), "common genes..."))
@@ -134,19 +187,17 @@ music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples,
   M.S = colMeans(sc.basis$S, na.rm = T)
   if (!is.null(cell_size)) {
     if (!is.data.frame(cell_size)) {
-      stop("cell_size paramter should be a data.frame with 1st column for cell type names and 2nd column for cell sizes")
-    }
-    else if (sum(names(M.S) %in% cell_size[, 1]) != length(names(M.S))) {
+      stop(
+        "cell_size paramter should be a data.frame with 1st column for cell type names and 2nd column for cell sizes"
+      )
+    } else if (sum(names(M.S) %in% cell_size[, 1]) != length(names(M.S))) {
       stop("Cell type names in cell_size must match clusters")
-    }
-    else if (any(is.na(as.numeric(cell_size[, 2])))) {
+    } else if (any(is.na(as.numeric(cell_size[, 2])))) {
       stop("Cell sizes should all be numeric")
     }
     my_ms_names <- names(M.S)
-    cell_size <- cell_size[my_ms_names %in% cell_size[, 1], 
-    ]
-    M.S <- cell_size[match(my_ms_names, cell_size[, 1]), 
-    ]
+    cell_size <- cell_size[my_ms_names %in% cell_size[, 1], ]
+    M.S <- cell_size[match(my_ms_names, cell_size[, 1]), ]
     M.S <- M.S[, 2]
     names(M.S) <- my_ms_names
   }
@@ -164,21 +215,38 @@ music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples,
         D1.temp = D1[Yjg[, i] != 0, ]
         Yjg.temp = Yjg[Yjg[, i] != 0, i]
         Sigma.ct.temp = Sigma.ct[, Yjg[, i] != 0]
-        if (verbose) 
-          message(paste(colnames(Yjg)[i], "has common genes", 
-                        sum(Yjg[, i] != 0), "..."))
-      }
-      else {
+        if (verbose) {
+          message(paste(
+            colnames(Yjg)[i],
+            "has common genes",
+            sum(Yjg[, i] != 0),
+            "..."
+          ))
+        }
+      } else {
         D1.temp = D1
         Yjg.temp = Yjg[, i]
         Sigma.ct.temp = Sigma.ct
-        if (verbose) 
-          message(paste(colnames(Yjg)[i], "has common genes", 
-                        sum(Yjg[, i] != 0), "..."))
+        if (verbose) {
+          message(paste(
+            colnames(Yjg)[i],
+            "has common genes",
+            sum(Yjg[, i] != 0),
+            "..."
+          ))
+        }
       }
-      lm.D1.weighted = music.iter.ct(Yjg.temp, D1.temp, 
-                                     M.S, Sigma.ct.temp, iter.max = iter.max, nu = nu, 
-                                     eps = eps, centered = centered, normalize = normalize)
+      lm.D1.weighted = music.iter.ct(
+        Yjg.temp,
+        D1.temp,
+        M.S,
+        Sigma.ct.temp,
+        iter.max = iter.max,
+        nu = nu,
+        eps = eps,
+        centered = centered,
+        normalize = normalize
+      )
       Est.prop.allgene = rbind(Est.prop.allgene, lm.D1.weighted$p.nnls)
       Est.prop.weighted = rbind(Est.prop.weighted, lm.D1.weighted$p.weight)
       weight.gene.temp = rep(NA, nrow(Yjg))
@@ -187,11 +255,11 @@ music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples,
       r.squared.full = c(r.squared.full, lm.D1.weighted$R.squared)
       Var.prop = rbind(Var.prop, lm.D1.weighted$var.p)
     }
-  }
-  else {
+  } else {
     Sigma = sc.basis$Sigma[m.sc, ]
-    valid.ct = (colSums(is.na(Sigma)) == 0) & (colSums(is.na(D1)) == 
-                                                 0) & (!is.na(M.S))
+    valid.ct = (colSums(is.na(Sigma)) == 0) &
+      (colSums(is.na(D1)) == 0) &
+      (!is.na(M.S))
     if (sum(valid.ct) <= 1) {
       stop("Not enough valid cell type!")
     }
@@ -211,21 +279,38 @@ music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples,
         D1.temp = D1[Yjg[, i] != 0, ]
         Yjg.temp = Yjg[Yjg[, i] != 0, i]
         Sigma.temp = Sigma[Yjg[, i] != 0, ]
-        if (verbose) 
-          message(paste(colnames(Yjg)[i], "has common genes", 
-                        sum(Yjg[, i] != 0), "..."))
-      }
-      else {
+        if (verbose) {
+          message(paste(
+            colnames(Yjg)[i],
+            "has common genes",
+            sum(Yjg[, i] != 0),
+            "..."
+          ))
+        }
+      } else {
         D1.temp = D1
         Yjg.temp = Yjg[, i]
         Sigma.temp = Sigma
-        if (verbose) 
-          message(paste(colnames(Yjg)[i], "has common genes", 
-                        sum(Yjg[, i] != 0), "..."))
+        if (verbose) {
+          message(paste(
+            colnames(Yjg)[i],
+            "has common genes",
+            sum(Yjg[, i] != 0),
+            "..."
+          ))
+        }
       }
-      lm.D1.weighted = music.iter(Yjg.temp, D1.temp, M.S, 
-                                  Sigma.temp, iter.max = iter.max, nu = nu, eps = eps, 
-                                  centered = centered, normalize = normalize)
+      lm.D1.weighted = music.iter(
+        Yjg.temp,
+        D1.temp,
+        M.S,
+        Sigma.temp,
+        iter.max = iter.max,
+        nu = nu,
+        eps = eps,
+        centered = centered,
+        normalize = normalize
+      )
       Est.prop.allgene = rbind(Est.prop.allgene, lm.D1.weighted$p.nnls)
       Est.prop.weighted = rbind(Est.prop.weighted, lm.D1.weighted$p.weight)
       weight.gene.temp = rep(NA, nrow(Yjg))
@@ -244,15 +329,26 @@ music_prop2<-function (bulk.mtx, sc.sce, markers = NULL, clusters, samples,
   rownames(Weight.gene) = cm.gene
   colnames(Var.prop) = colnames(D1)
   rownames(Var.prop) = colnames(Yjg)
-  return(list(Est.prop.weighted = Est.prop.weighted, Est.prop.allgene = Est.prop.allgene, 
-              Weight.gene = Weight.gene, r.squared.full = r.squared.full, 
-              Var.prop = Var.prop))
+  return(list(
+    Est.prop.weighted = Est.prop.weighted,
+    Est.prop.allgene = Est.prop.allgene,
+    Weight.gene = Weight.gene,
+    r.squared.full = r.squared.full,
+    Var.prop = Var.prop
+  ))
 }
 
-music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples, 
-                        select.ct = NULL, cell_size = NULL, ct.cov = FALSE, verbose = TRUE) 
-{
- 
+music_basis2 <- function(
+  x,
+  non.zero = TRUE,
+  markers = NULL,
+  clusters,
+  samples,
+  select.ct = NULL,
+  cell_size = NULL,
+  ct.cov = FALSE,
+  verbose = TRUE
+) {
   if (!is.null(select.ct)) {
     x = x[, x@colData[, clusters] %in% select.ct]
   }
@@ -263,15 +359,17 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
   clusters <- as.character(colData(x)[, clusters])
   samples <- as.character(colData(x)[, samples])
   M.theta <- sapply(unique(clusters), function(ct) {
-    my.rowMeans(sapply(unique(samples), function(sid) {
-      y = counts(x)[, clusters %in% ct & samples %in% sid]
-      if (is.null(dim(y))) {
-        return(y/sum(y))
-      }
-      else {
-        return(rowSums(y)/sum(y))
-      }
-    }), na.rm = TRUE)
+    my.rowMeans(
+      sapply(unique(samples), function(sid) {
+        y = counts(x)[, clusters %in% ct & samples %in% sid]
+        if (is.null(dim(y))) {
+          return(y / sum(y))
+        } else {
+          return(rowSums(y) / sum(y))
+        }
+      }),
+      na.rm = TRUE
+    )
   })
   if (verbose) {
     message("Creating Relative Abundance Matrix...")
@@ -282,13 +380,16 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
     nSubs = length(unique(samples))
     Theta <- sapply(unique(clusters), function(ct) {
       sapply(unique(samples), function(sid) {
-        y = counts(x)[, clusters %in% ct & samples %in% 
-                        sid]
+        y = counts(x)[,
+          clusters %in%
+            ct &
+            samples %in%
+              sid
+        ]
         if (is.null(dim(y))) {
-          return(y/sum(y))
-        }
-        else {
-          return(rowSums(y)/sum(y))
+          return(y / sum(y))
+        } else {
+          return(rowSums(y) / sum(y))
         }
       })
     })
@@ -297,15 +398,22 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
       Theta = Theta[, m.ct]
     }
     Sigma.ct = sapply(1:nGenes, function(g) {
-      sigma.temp = Theta[nGenes * (0:(nSubs - 1)) + g, 
-      ]
+      sigma.temp = Theta[nGenes * (0:(nSubs - 1)) + g, ]
       Cov.temp = cov(sigma.temp)
-      Cov.temp1 = cov(sigma.temp[rowSums(is.na(Theta[nGenes * 
-                                                       (0:(nSubs - 1)) + 1, ])) == 0, ])
-      Cov.temp[which(colSums(is.na(sigma.temp)) > 0), ] = Cov.temp1[which(colSums(is.na(sigma.temp)) > 
-                                                                            0), ]
-      Cov.temp[, which(colSums(is.na(sigma.temp)) > 0)] = Cov.temp1[, 
-                                                                    which(colSums(is.na(sigma.temp)) > 0)]
+      Cov.temp1 = cov(sigma.temp[
+        rowSums(is.na(Theta[
+          nGenes *
+            (0:(nSubs - 1)) +
+            1,
+        ])) ==
+          0,
+      ])
+      Cov.temp[which(colSums(is.na(sigma.temp)) > 0), ] = Cov.temp1[
+        which(colSums(is.na(sigma.temp)) > 0),
+      ]
+      Cov.temp[, which(colSums(is.na(sigma.temp)) > 0)] = Cov.temp1[,
+        which(colSums(is.na(sigma.temp)) > 0)
+      ]
       return(Cov.temp)
     })
     colnames(Sigma.ct) = rownames(x)
@@ -317,19 +425,26 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
     if (verbose) {
       message("Creating Covariance Matrix...")
     }
-  }
-  else {
+  } else {
     Sigma <- sapply(unique(clusters), function(ct) {
-      apply(sapply(unique(samples), function(sid) {
-        y = counts(x)[, clusters %in% ct & samples %in% 
-                        sid]
-        if (is.null(dim(y))) {
-          return(y/sum(y))
-        }
-        else {
-          return(rowSums(y)/sum(y))
-        }
-      }), 1, var, na.rm = TRUE)
+      apply(
+        sapply(unique(samples), function(sid) {
+          y = counts(x)[,
+            clusters %in%
+              ct &
+              samples %in%
+                sid
+          ]
+          if (is.null(dim(y))) {
+            return(y / sum(y))
+          } else {
+            return(rowSums(y) / sum(y))
+          }
+        }),
+        1,
+        var,
+        na.rm = TRUE
+      )
     })
     if (!is.null(select.ct)) {
       m.ct = match(select.ct, colnames(Sigma))
@@ -345,15 +460,17 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
     }
   }
   S <- sapply(unique(clusters), function(ct) {
-    my.rowMeans(sapply(unique(samples), function(sid) {
-      y = counts(x)[, clusters %in% ct & samples %in% sid]
-      if (is.null(dim(y))) {
-        return(sum(y))
-      }
-      else {
-        return(sum(y)/ncol(y))
-      }
-    }), na.rm = TRUE)
+    my.rowMeans(
+      sapply(unique(samples), function(sid) {
+        y = counts(x)[, clusters %in% ct & samples %in% sid]
+        if (is.null(dim(y))) {
+          return(sum(y))
+        } else {
+          return(sum(y) / ncol(y))
+        }
+      }),
+      na.rm = TRUE
+    )
   })
   if (verbose) {
     message("Creating Library Size Matrix...")
@@ -362,19 +479,17 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
   M.S = colMeans(S, na.rm = TRUE)
   if (!is.null(cell_size)) {
     if (!is.data.frame(cell_size)) {
-      stop("cell_size paramter should be a data.frame with 1st column for cell type names and 2nd column for cell sizes")
-    }
-    else if (sum(names(M.S) %in% cell_size[, 1]) != length(names(M.S))) {
+      stop(
+        "cell_size paramter should be a data.frame with 1st column for cell type names and 2nd column for cell sizes"
+      )
+    } else if (sum(names(M.S) %in% cell_size[, 1]) != length(names(M.S))) {
       stop("Cell type names in cell_size must match clusters")
-    }
-    else if (any(is.na(as.numeric(cell_size[, 2])))) {
+    } else if (any(is.na(as.numeric(cell_size[, 2])))) {
       stop("Cell sizes should all be numeric")
     }
     my_ms_names <- names(M.S)
-    cell_size <- cell_size[my_ms_names %in% cell_size[, 1], 
-    ]
-    M.S <- cell_size[match(my_ms_names, cell_size[, 1]), 
-    ]
+    cell_size <- cell_size[my_ms_names %in% cell_size[, 1], ]
+    M.S <- cell_size[match(my_ms_names, cell_size[, 1]), ]
     M.S <- M.S[, 2]
     names(M.S) <- my_ms_names
   }
@@ -393,290 +508,357 @@ music_basis2<-function (x, non.zero = TRUE, markers = NULL, clusters, samples,
     M.theta <- M.theta[m.ids, ]
   }
   if (ct.cov) {
-    return(list(Disgn.mtx = D, S = S, M.S = M.S, M.theta = M.theta, 
-                Sigma.ct = Sigma.ct))
+    return(list(
+      Disgn.mtx = D,
+      S = S,
+      M.S = M.S,
+      M.theta = M.theta,
+      Sigma.ct = Sigma.ct
+    ))
+  } else {
+    return(list(
+      Disgn.mtx = D,
+      S = S,
+      M.S = M.S,
+      M.theta = M.theta,
+      Sigma = Sigma
+    ))
   }
-  else {
-    return(list(Disgn.mtx = D, S = S, M.S = M.S, M.theta = M.theta, 
-                Sigma = Sigma))
-  }
-} 
-
-
-
-
-
-run_music_algorithm2 <- function(bulk_data, sce_object, celltypes){
-  
-  Est.prop.paren <- music_prop2(
-    bulk.mtx = bulk_data, 
-    sc.sce   = sce_object, 
-    clusters = "new_clusters", 
-    samples  = 'sample', 
-    select.ct = celltypes, 
-    verbose =T)
 }
 
 
+run_music_algorithm2 <- function(bulk_data, sce_object, celltypes) {
+  Est.prop.paren <- music_prop2(
+    bulk.mtx = bulk_data,
+    sc.sce = sce_object,
+    clusters = "new_clusters",
+    samples = 'sample',
+    select.ct = celltypes,
+    verbose = T
+  )
+}
 
 
-create_input_sce <- function(start_sce, new_clusters){
+create_input_sce <- function(start_sce, new_clusters) {
   # Input is a tibble with cluster names and cluster_mebers
-  toreplace <- setNames(obj= new_clusters %>% pull(cluster_name),
-                        nm = new_clusters %>% pull(cluster_member)
-                        )
- # print(toreplace)
+  toreplace <- setNames(
+    obj = new_clusters %>% pull(cluster_name),
+    nm = new_clusters %>% pull(cluster_member)
+  )
+  # print(toreplace)
   tomatch <- tibble(level4 = start_sce$ann_level_4)
-  tomatch <- tomatch %>%  dplyr::mutate(level4 = gsub(level4,pattern="^\\d_",replace="")) %>% 
-  left_join(new_clusters, by = c("level4" = "cluster_member")) %>% 
-  dplyr::mutate(cluster_name = as.character(cluster_name))   %>% 
-  dplyr::mutate(cluster_name = ifelse(is.na(cluster_name),"other",cluster_name))
-  
+  tomatch <- tomatch %>%
+    dplyr::mutate(level4 = gsub(level4, pattern = "^\\d_", replace = "")) %>%
+    left_join(new_clusters, by = c("level4" = "cluster_member")) %>%
+    dplyr::mutate(cluster_name = as.character(cluster_name)) %>%
+    dplyr::mutate(
+      cluster_name = ifelse(is.na(cluster_name), "other", cluster_name)
+    )
+
   #print(tomatch)
   start_sce$new_clusters <- tomatch %>% pull(cluster_name)
   start_sce
-  
 }
 
 ####### SUBSETTING ############
-create_subset_so <- function(so_small, mytissue){
- # message("Subsetting")
+create_subset_so <- function(so_small, mytissue) {
+  # message("Subsetting")
   #   print(mytissue)
-#  mytissue <- user_data$tissue_type
-  
-  print(paste0("Subsetting for ",mytissue))
+  #  mytissue <- user_data$tissue_type
+
+  print(paste0("Subsetting for ", mytissue))
   #  current_tree <- cell_annotations %>% filter(tissue == input$tissue_type)
   # copy ifelse logic from slide Tessa
-  if ( mytissue == "parenchyma"){
-    so_small_sub <- subset(so_small, subset= anatomical_region_coarse == mytissue)
-    
+  if (mytissue == "parenchyma") {
+    so_small_sub <- subset(
+      so_small,
+      subset = anatomical_region_coarse == mytissue
+    )
   }
-  if( mytissue == "bronchial_biopsy"){
-    so_small_sub <- subset(so_small, subset= sample_type == "biopsy") %>% 
-      subset(subset = anatomical_region_coarse %in% c('airway','Intermediate Bronchi',"Trachea"))
+  if (mytissue == "bronchial_biopsy") {
+    so_small_sub <- subset(so_small, subset = sample_type == "biopsy") %>%
+      subset(
+        subset = anatomical_region_coarse %in%
+          c('airway', 'Intermediate Bronchi', "Trachea")
+      )
   }
-  
-  if( mytissue == "nasal_brush"){
-    so_small_sub <- subset(so_small, subset= sample_type %in% c("brush","scraping")) %>% 
-      subset(subset = anatomical_region_coarse %in% c('nose','Inferior turbinate'))
-    
+
+  if (mytissue == "nasal_brush") {
+    so_small_sub <- subset(
+      so_small,
+      subset = sample_type %in% c("brush", "scraping")
+    ) %>%
+      subset(
+        subset = anatomical_region_coarse %in% c('nose', 'Inferior turbinate')
+      )
   }
-  if( mytissue == "bronchial_brush"){
-    so_small_sub <- subset(so_small, subset= sample_type %in% c("brush")) %>% 
-      subset(subset=  anatomical_region_coarse %in% c("Distal Bronchi"))
-    
+  if (mytissue == "bronchial_brush") {
+    so_small_sub <- subset(so_small, subset = sample_type %in% c("brush")) %>%
+      subset(subset = anatomical_region_coarse %in% c("Distal Bronchi"))
   }
-  
-  so_small_sub 
-  
+
+  so_small_sub
 }
 
 
 ####### GROUND TRUTH EVALUATION  #########
 
-create_ground_truth <- function(so, tissue, user_clusters, sample_type){
+create_ground_truth <- function(so, tissue, user_clusters, sample_type) {
+  gt <- so@meta.data %>%
+    as_tibble(rownames = "barcode") %>%
+    dplyr::select(barcode, sample, anatomical_region_coarse, ann_level_4) %>%
+    dplyr::mutate(across(everything(), as.character)) %>%
+    #  filter(anatomical_region_coarse == tissue) %>%
+    dplyr::mutate(
+      ann_level_4 = gsub(ann_level_4, pattern = "^\\d_", replace = "")
+    ) %>%
+    dplyr::rename(sample_id = sample)
 
-  gt <- so@meta.data %>% as_tibble(rownames = "barcode") %>% 
-    dplyr::select(barcode, sample, anatomical_region_coarse, ann_level_4) %>% 
-    dplyr::mutate(across(everything(), as.character)) %>% 
-  #  filter(anatomical_region_coarse == tissue) %>% 
-    dplyr::mutate(ann_level_4 = gsub(ann_level_4,pattern="^\\d_",replace="")) %>% 
-    dplyr::rename(sample_id=sample)
-  
   #Update the gt to reflect the new clusters
-  
-  gt <- gt %>% left_join(user_clusters, by = c("ann_level_4"= "cluster_member" )) %>% 
-    dplyr::mutate(cluster_name = ifelse(is.na(cluster_name), "other",cluster_name))
-  
+
+  gt <- gt %>%
+    left_join(user_clusters, by = c("ann_level_4" = "cluster_member")) %>%
+    dplyr::mutate(
+      cluster_name = ifelse(is.na(cluster_name), "other", cluster_name)
+    )
+
   # Now add the count per cluster
-  gt <- gt %>% group_by(sample_id,cluster_name) %>% 
+  gt <- gt %>%
+    group_by(sample_id, cluster_name) %>%
     dplyr::mutate(cluster_count = n())
-  
-  gt <- gt %>% ungroup() %>% group_by(sample_id) %>% 
+
+  gt <- gt %>%
+    ungroup() %>%
+    group_by(sample_id) %>%
     dplyr::mutate(total_cells = n())
-  
-  gt <- gt %>% dplyr::mutate(percentage_true = cluster_count/total_cells) %>% 
-    dplyr::select(cluster_name, sample_id, percentage_true) %>% distinct()
-  
+
+  gt <- gt %>%
+    dplyr::mutate(percentage_true = cluster_count / total_cells) %>%
+    dplyr::select(cluster_name, sample_id, percentage_true) %>%
+    distinct()
+
   gt
 }
 
-eval_ground_truth <- function(music_results, ground_truth){
+eval_ground_truth <- function(music_results, ground_truth) {
   #print("I am in function eval_ground_truth")
   #print(ground_truth)
   music_results <- music_results$Est.prop.weighted
   samples_pseudobulk <- row.names(music_results)
   samples_gt <- ground_truth %>% pull(sample_id) %>% unique()
-  
+
   only_in_gt <- setdiff(samples_gt, samples_pseudobulk)
   only_in_pseudobulk <- setdiff(samples_pseudobulk, samples_gt)
-  
-  
+
   #We now should see recalculate the portions of clusters per sample for the groudn truth
-  
+
   gt_narrow <- ground_truth %>% filter(!sample_id %in% only_in_gt)
-  
-  
-  
-  
-  
-  music_data <- music_results %>% as_tibble(rownames="sample_id") %>% 
-    pivot_longer(cols = -sample_id, names_to ="cluster_name", values_to = "percentage_found")
-  
-  eval_results <- music_data %>% full_join(gt_narrow, by =c("sample_id"="sample_id", 
-                                                            "cluster_name" = "cluster_name")) %>% 
-    dplyr::mutate(percentage_found = ifelse(is.na(percentage_found), 0.01 ,percentage_found),
-           percentage_true = ifelse(is.na(percentage_true), 0.01 ,percentage_true)
-    ) %>% 
-    dplyr::mutate(prop_error = (percentage_true-percentage_found)/percentage_true) 
-  
+
+  music_data <- music_results %>%
+    as_tibble(rownames = "sample_id") %>%
+    pivot_longer(
+      cols = -sample_id,
+      names_to = "cluster_name",
+      values_to = "percentage_found"
+    )
+
+  eval_results <- music_data %>%
+    full_join(
+      gt_narrow,
+      by = c("sample_id" = "sample_id", "cluster_name" = "cluster_name")
+    ) %>%
+    dplyr::mutate(
+      percentage_found = ifelse(
+        is.na(percentage_found),
+        0.01,
+        percentage_found
+      ),
+      percentage_true = ifelse(is.na(percentage_true), 0.01, percentage_true)
+    ) %>%
+    dplyr::mutate(
+      prop_error = (percentage_true - percentage_found) / percentage_true
+    )
+
   # Get mean absolute prop error
-  
+
   mape <- eval_results %>%
-   # filter(cluster_name!="other") %>% 
-    group_by(cluster_name) %>% 
+    # filter(cluster_name!="other") %>%
+    group_by(cluster_name) %>%
     summarize(mape = mean(abs(prop_error)))
-  
-  
+
   # Get the correlations
-  eval_results <- eval_results %>% group_by(cluster_name) %>% 
-    dplyr::mutate(iqr_high =  quantile(percentage_true, probs=.75) %>% as.numeric(),
-           iqr_low  =  quantile(percentage_true, probs=.25) %>% as.numeric(),
-           H = 1.5*IQR(percentage_true)
-    ) 
-  
-  corr_df <- eval_results %>% 
-    filter(percentage_true < iqr_high + H,
-           percentage_true > iqr_low - H,) %>% 
-    group_by(cluster_name) %>% 
-    dplyr::mutate(mycor= floor(100*cor(percentage_found, percentage_true))/100)
-  
-  
-  
-  list(prop_error = eval_results , mape=mape, corr_df = corr_df)
+  eval_results <- eval_results %>%
+    group_by(cluster_name) %>%
+    dplyr::mutate(
+      iqr_high = quantile(percentage_true, probs = .75) %>% as.numeric(),
+      iqr_low = quantile(percentage_true, probs = .25) %>% as.numeric(),
+      H = 1.5 * IQR(percentage_true)
+    )
+
+  corr_df <- eval_results %>%
+    filter(percentage_true < iqr_high + H, percentage_true > iqr_low - H, ) %>%
+    group_by(cluster_name) %>%
+    dplyr::mutate(
+      mycor = floor(100 * cor(percentage_found, percentage_true)) / 100
+    )
+
+  list(prop_error = eval_results, mape = mape, corr_df = corr_df)
 }
 
 
-plot_corr_df <- function(correlation_df, show_sample_ids=FALSE, show_se = FALSE){
+plot_corr_df <- function(
+  correlation_df,
+  show_sample_ids = FALSE,
+  show_se = FALSE
+) {
   #print(correlation_df)
-  p <- ggplot(correlation_df, aes(x = percentage_true, y =percentage_found))
+  p <- ggplot(correlation_df, aes(x = percentage_true, y = percentage_found))
   # p <- p + geom_line()
-  p <- p + geom_point(size=5, alpha=0.6, color="#0000ff")
-  if(show_sample_ids ==TRUE){
-    p <- p + geom_text(aes(label = sample_id), size=5)
+  p <- p + geom_point(size = 5, alpha = 0.6, color = "#0000ff")
+  if (show_sample_ids == TRUE) {
+    p <- p + geom_text(aes(label = sample_id), size = 5)
   }
-  p <- p + geom_smooth(method='lm', formula= y~x, se=show_se)
-  p <- p + facet_wrap(.~paste0(cluster_name, " : " , mycor),scales="free")
- # p <-p + theme_cyberlung
-  p <- p + labs(title="Correlation", y = "Estimated fraction", x = "True fraction")
-  p <-p + theme_bw()
-  p <- p + theme(axis.text = element_text(size=12))
-  p <- p + theme(strip.text = element_text(size=14))
-  p <- p + theme(axis.title = element_text(size=14))
+  p <- p + geom_smooth(method = 'lm', formula = y ~ x, se = show_se)
+  p <- p + facet_wrap(. ~ paste0(cluster_name, " : ", mycor), scales = "free")
+  # p <-p + theme_cyberlung
+  p <- p +
+    labs(title = "Correlation", y = "Estimated fraction", x = "True fraction")
+  p <- p + theme_bw()
+  p <- p + theme(axis.text = element_text(size = 12))
+  p <- p + theme(strip.text = element_text(size = 14))
+  p <- p + theme(axis.title = element_text(size = 14))
   p
 }
 
-plot_decision_cor <- function(correlation_df, flip=FALSE){
+plot_decision_cor <- function(correlation_df, flip = FALSE) {
   tp <- correlation_df %>% dplyr::select(cluster_name, mycor) %>% distinct()
-  
-  p <-ggplot(tp, aes(x = reorder(cluster_name, mycor), y = mycor))
 
- 
-  p <-p + annotate(geom='rect', ymin=0.7, ymax=Inf, xmin = -Inf, xmax = Inf, 
-           fill='darkolivegreen2', alpha=1) 
-  p <- p + annotate(geom='rect', ymin=-Inf, ymax=0.7, xmin = -Inf, xmax = Inf, 
-             fill='sandybrown', alpha=1)
-  p <-p + geom_point(size=5)
-  p <-p + labs(x = "", y = "Correlation")
-  if (flip==TRUE){
-    p <-p + coord_flip()
+  p <- ggplot(tp, aes(x = reorder(cluster_name, mycor), y = mycor))
+
+  p <- p +
+    annotate(
+      geom = 'rect',
+      ymin = 0.7,
+      ymax = Inf,
+      xmin = -Inf,
+      xmax = Inf,
+      fill = 'darkolivegreen2',
+      alpha = 1
+    )
+  p <- p +
+    annotate(
+      geom = 'rect',
+      ymin = -Inf,
+      ymax = 0.7,
+      xmin = -Inf,
+      xmax = Inf,
+      fill = 'sandybrown',
+      alpha = 1
+    )
+  p <- p + geom_point(size = 5)
+  p <- p + labs(x = "", y = "Correlation")
+  if (flip == TRUE) {
+    p <- p + coord_flip()
   }
-  p <-p + theme_bw()
-  p <- p + theme(axis.text = element_text(size=12))
-  p <- p + theme(strip.text = element_text(size=14))
-  p <- p + theme(axis.title = element_text(size=14))
+  p <- p + theme_bw()
+  p <- p + theme(axis.text = element_text(size = 12))
+  p <- p + theme(strip.text = element_text(size = 14))
+  p <- p + theme(axis.title = element_text(size = 14))
   p
 }
 
 
-plot_decision_mape <- function(mape, flip=FALSE){
+plot_decision_mape <- function(mape, flip = FALSE) {
   tp <- mape %>% dplyr::select(cluster_name, mape) %>% distinct()
-  
-  p <-ggplot(tp, aes(x = reorder(cluster_name,mape), y = mape))
-  
-  p <-p + ylim(0,NA) 
-  p <-p + annotate(geom='rect', ymin=-Inf, ymax=1, xmin = -Inf, xmax = Inf, 
-             fill='darkolivegreen2', alpha=1)
-  p <- p +   annotate(geom='rect', ymin=1, ymax=Inf, xmin = -Inf, xmax = Inf, 
-             fill='sandybrown', alpha=1)
-    
 
-  p <-p + geom_point(size=5)
-  p <-p + labs(x = "", y = "MAPE")
-  if (flip==TRUE){
-    p <-p + coord_flip()
+  p <- ggplot(tp, aes(x = reorder(cluster_name, mape), y = mape))
+
+  p <- p + ylim(0, NA)
+  p <- p +
+    annotate(
+      geom = 'rect',
+      ymin = -Inf,
+      ymax = 1,
+      xmin = -Inf,
+      xmax = Inf,
+      fill = 'darkolivegreen2',
+      alpha = 1
+    )
+  p <- p +
+    annotate(
+      geom = 'rect',
+      ymin = 1,
+      ymax = Inf,
+      xmin = -Inf,
+      xmax = Inf,
+      fill = 'sandybrown',
+      alpha = 1
+    )
+
+  p <- p + geom_point(size = 5)
+  p <- p + labs(x = "", y = "MAPE")
+  if (flip == TRUE) {
+    p <- p + coord_flip()
   }
-  p <-p + theme_bw()
-  p <- p + theme(axis.text = element_text(size=12))
-  p <- p + theme(strip.text = element_text(size=14))
-  p <- p + theme(axis.title = element_text(size=14))
+  p <- p + theme_bw()
+  p <- p + theme(axis.text = element_text(size = 12))
+  p <- p + theme(strip.text = element_text(size = 14))
+  p <- p + theme(axis.title = element_text(size = 14))
   p
-  
 }
-
 
 
 ####### MUSIC EVALUATION VISUALISATION #######
 
-rawdata_music<- function(x, pivot_it=F){
+rawdata_music <- function(x, pivot_it = F) {
   x <- x %>% dplyr::select(-resname)
-  if (pivot_it==T){
+  if (pivot_it == T) {
     x <- x %>% pivot_wider(names_from = "cell_type", values_from = "fraction")
   }
   x
 }
 
-dotplot_music<- function(x){
+dotplot_music <- function(x) {
   # print(x)
   p <- ggplot(x, aes(x = cell_type, y = fraction))
   p <- p + geom_point()
-  
-  p <- p + facet_wrap(.~sample_id)
+
+  p <- p + facet_wrap(. ~ sample_id)
   p <- p + coord_flip()
   p
-  
 }
 
 
-heatmap_music<- function(x, show_fractions = FALSE, flipit=FALSE){
+heatmap_music <- function(x, show_fractions = FALSE, flipit = FALSE) {
   print(x)
-  p <- ggplot(x, aes(x = cell_type, y = sample_id, fill=fraction, label=fraction))
+  p <- ggplot(
+    x,
+    aes(x = cell_type, y = sample_id, fill = fraction, label = fraction)
+  )
   p <- p + geom_tile()
-  if (show_fractions ==T){
-    p <p + geom_text(size=2)
+  if (show_fractions == T) {
+    p < p + geom_text(size = 2)
   }
   p <- p + theme_bw()
-  p <- p +scale_fill_gradient(high="blue",low="white")
-  p <- p + labs(x = "", y= "",title = "Frequency distribution")
-  p <- p + theme(axis.text = element_text(size=14) )
+  p <- p + scale_fill_gradient(high = "blue", low = "white")
+  p <- p + labs(x = "", y = "", title = "Frequency distribution")
+  p <- p + theme(axis.text = element_text(size = 14))
   #  p <- p + facet_wrap(.~sample_id)
-  if (flipit ==TRUE){
+  if (flipit == TRUE) {
     p <- p + coord_flip()
   }
-  p <- p + theme(axis.text.x = element_text(angle=-270) )
+  p <- p + theme(axis.text.x = element_text(angle = -270))
   p
-  
 }
 
-stacked_bar_music <- function(x,flipit=FALSE){
-  p <- ggplot(x, aes(x = sample_id, y=fraction, fill = cell_type)) 
-  p <-p + geom_bar(stat = "identity")
+stacked_bar_music <- function(x, flipit = FALSE) {
+  p <- ggplot(x, aes(x = sample_id, y = fraction, fill = cell_type))
+  p <- p + geom_bar(stat = "identity")
   p <- p + theme_bw()
-  p <-p + theme(axis.text.x = element_text(angle = +90, hjust = 0))
-  p <- p + labs(x = "", y= "",title = "Frequency distribution")
-  if (flipit ==TRUE){
+  p <- p + theme(axis.text.x = element_text(angle = +90, hjust = 0))
+  p <- p + labs(x = "", y = "", title = "Frequency distribution")
+  if (flipit == TRUE) {
     p <- p + coord_flip()
   }
   p
-  
 }
