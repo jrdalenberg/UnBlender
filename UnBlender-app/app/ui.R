@@ -26,22 +26,28 @@ source(paste0(basedir, 'help_creator_functions.r'))
 sidebar <- dashboardSidebar(
   sidebarMenu(id="tabs",
     # Landing page tab
-    menuItem("Welcome", tabName = "welcome" ),
+    menuItem("Welcome", tabName = "welcome"),
     # Create Reference tab
-    menuItem("Step 1: Create Reference",tabName="",startExpanded = TRUE,
-    menuSubItem('Select Tissue', tabName= "select_tissue"),
-    menuSubItem("Select cell types", tabName = "create_sets") ,
-    menuSubItem("Remove DEGs (optional)", tabName = "remove_degs")),
+    menuItem(
+      "Step 1: Create Reference",tabName="",startExpanded = TRUE,
+      menuSubItem('Select Tissue', tabName= "select_tissue"),
+      menuSubItem("Select cell types", tabName = "create_sets") ,
+      menuSubItem("Remove DEGs (optional)", tabName = "remove_degs")
+    ),
     # Validate Reference tab
-    menuItem("Step 2: Validate", tabName="",startExpanded = FALSE,
-    menuSubItem("Run validation",    tabName = "current_sets" ),
-    menuSubItem("Inspect output", tabName = "results_evaluation")),
+    menuItem(
+      "Step 2: Validate", tabName="",startExpanded = FALSE,
+      menuSubItem("Run validation",    tabName = "current_sets" ),
+      menuSubItem("Inspect output", tabName = "results_evaluation")
+    ),
     # Deconvolve selected cells tab
-    menuItem("Step 3 : Deconvolute",     tabName = "",startExpanded = FALSE,
+    menuItem(
+      "Step 3 : Deconvolute",     tabName = "",startExpanded = FALSE,
       menuSubItem("Upload data", tabName = "upload_data"),  
-      menuSubItem("Results", tabName = "user_results")),
+      menuSubItem("Results", tabName = "user_results")
+    ),
     # Contact page
-    menuItem("Contact",     tabName = "contact")
+    menuItem("Contact", tabName = "contact")
   )
 )
 
