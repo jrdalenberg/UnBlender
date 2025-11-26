@@ -31,11 +31,11 @@ no_deconvolution_results <- function(x) {
 }
 
 error_message <- function(x) {
-  HTML(paste0('<div style="color:#FF0000;">', x, "</div>"))
+  shiny::HTML(paste0('<div style="color:#FF0000;">', x, "</div>"))
 }
 
 instruction_message <- function(x) {
-  HTML(paste0('<div class="instruction_message">', x, "</div>"))
+  shiny::HTML(paste0('<div class="instruction_message">', x, "</div>"))
 }
 
 mybox <- function(
@@ -63,7 +63,7 @@ mybox <- function(
     boxClass <- paste(boxClass, "collapsed-box")
   }
   if (!is.null(background)) {
-    validateColor(background)
+    shinydashboard::validateColor(background)
     boxClass <- paste0(boxClass, " bg-", background)
   }
   style <- NULL
@@ -94,7 +94,7 @@ mybox <- function(
 
   helpTag <- NULL
   if (!is.null(help)) {
-    helpTag <- HTML(paste0(
+    helpTag <- shiny::HTML(paste0(
       '<div class="pull-right" style="display:block" onClick=toggle("',
       help,
       '")>',
