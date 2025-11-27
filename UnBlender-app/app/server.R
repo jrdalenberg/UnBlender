@@ -106,6 +106,10 @@ shinyServer(function(input, output, session) {
   })
 
   #### Select cells ####
+  observeEvent(input$goto_select_tissuetypes, {
+    updateTabItems(session, "tabs", "select_tissue")
+  })
+
 
   output$no_tissue_error <- renderUI({
     x <- ""

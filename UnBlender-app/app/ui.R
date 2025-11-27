@@ -133,7 +133,7 @@ body <- dashboardBody(
       )
     ),
     # Create reference page body
-    # Select tissue
+    # PAGE 1 - Select Tissue
     tabItem(
       tabName = "select_tissue",
       fluidRow(
@@ -152,14 +152,17 @@ body <- dashboardBody(
             ),
             shiny::actionButton(
               "confirm_tissue",
-              label = "Confirm"
+              label = "Select Tissue",
+              icon = icon("check"),
+              class = "btn-primary",
+              style = "color: white; background-color: #28a745; border-color: #28a745;",
             ),
-            ### New functionality for moving to next.
+            # functionality for moving to next page.
             shiny::actionButton(
               "goto_select_celltypes",
               label = "Next",
               icon = icon("angle-right"),
-              class = "btn-primary btn-lg",
+              class = "btn-primary",
             ),
             shiny::uiOutput(
               "tissue_confirm"
@@ -208,11 +211,27 @@ body <- dashboardBody(
                   themeIcons = F
                 ),
                 hr(),
-                actionButton(
-                  "add_all_for_deconv",
-                  HTML(
-                    "Add selected cells <br> to deconvolution set"
-                  )
+                ## Sort these elements in row
+                shiny::fluidRow(
+                  shiny::column(
+                    3,
+                    shiny::actionButton(
+                      "goto_select_tissuetypes",
+                      label = "Previous",
+                      icon = icon("angle-left"),
+                      class = "btn-primary",
+                    )
+                  ),
+                  shiny::column(
+                    3,
+                    shiny::actionButton(
+                      "add_all_for_deconv",
+                      label = "Select Celltypes",
+                      icon = icon("check"),
+                      class = "btn-primary",
+                      style = "color: white; background-color: #28a745; border-color: #28a745;",
+                    )
+                  ),
                 )
               )
             ),
