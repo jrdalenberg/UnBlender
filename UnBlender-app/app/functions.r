@@ -56,7 +56,6 @@ mybox <- function(
     boxClass <- paste(boxClass, "box-solid")
   }
   if (!is.null(status)) {
-    #   validateStatus(status)
     boxClass <- paste0(boxClass, " box-", status)
   }
   if (collapsible && collapsed) {
@@ -76,7 +75,7 @@ mybox <- function(
   }
   collapseTag <- NULL
   if (collapsible) {
-    buttonStatus <- status #%OR% "default"
+    buttonStatus <- status
     collapseIcon <- if (collapsed) {
       "plus"
     } else {
@@ -155,7 +154,6 @@ music_prop2 <- function(
   } else {
     sc.markers = intersect(bulk.gene, unlist(markers))
   }
-  print("I am here")
   sc.basis = music_basis2(
     sc.sce,
     non.zero = TRUE,
@@ -167,7 +165,6 @@ music_prop2 <- function(
     ct.cov = ct.cov,
     verbose = verbose
   )
-  print("I am here")
   cm.gene = intersect(rownames(sc.basis$Disgn.mtx), bulk.gene)
   if (is.null(markers)) {
     if (length(cm.gene) < 0.2 * min(length(bulk.gene), nrow(sc.sce))) {

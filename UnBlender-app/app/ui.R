@@ -140,21 +140,28 @@ body <- dashboardBody(
         column(
           3,
           mybox(
-            HTML(
+            shiny::HTML(
               tissue_select_help()
             ),
             help = 'tissue_select_help',
             title = "Select sample type",
-            selectizeInput(
+            shiny::selectizeInput(
               "tissue_type",
               label = "Tissue type",
               choices = tissues
             ),
-            actionButton(
+            shiny::actionButton(
               "confirm_tissue",
               label = "Confirm"
             ),
-            uiOutput(
+            ### New functionality for moving to next.
+            shiny::actionButton(
+              "goto_select_celltypes",
+              label = "Next",
+              icon = icon("angle-right"),
+              class = "btn-primary btn-lg",
+            ),
+            shiny::uiOutput(
               "tissue_confirm"
             )
           )
