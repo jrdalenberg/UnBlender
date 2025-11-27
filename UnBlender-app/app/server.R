@@ -89,6 +89,10 @@ shinyServer(function(input, output, session) {
     includeMarkdown(file.path(basedir, "www/intro.md"))
   })
 
+  observeEvent(input$goto_start, {
+    updateTabItems(session, "tabs", "select_tissue")
+  }) 
+
   ##### BUILDING COLLECTIONS #####
 
   #### Select tissue ####
@@ -108,6 +112,10 @@ shinyServer(function(input, output, session) {
   #### Select cells ####
   observeEvent(input$goto_select_tissuetypes, {
     updateTabItems(session, "tabs", "select_tissue")
+  })
+
+  observeEvent(input$goto_select_removedegs, {
+    updateTabItems(session, "tabs", "remove_degs")
   })
 
 

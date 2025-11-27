@@ -112,6 +112,14 @@ body <- dashboardBody(
             fluidRow(
               column(
                 6,
+                hr(),
+                shiny::actionButton(
+                  "goto_start",
+                  label = "Get Started!",
+                  icon = icon("check"),
+                  class = "btn-primary",
+                  style = "color: white; background-color: #28a745; border-color: #28a745;",
+                    ),
                 uiOutput(
                   "intro"
                 )
@@ -202,7 +210,6 @@ body <- dashboardBody(
                 uiOutput(
                   "no_tissue_error"
                 ),
-                hr(),
                 # Create the tree for sample selection
                 shinyTree(
                   "mytree",
@@ -211,28 +218,25 @@ body <- dashboardBody(
                   themeIcons = F
                 ),
                 hr(),
-                ## Sort these elements in row
-                shiny::fluidRow(
-                  shiny::column(
-                    3,
-                    shiny::actionButton(
-                      "goto_select_tissuetypes",
-                      label = "Previous",
-                      icon = icon("angle-left"),
-                      class = "btn-primary",
-                    )
+                shiny::actionButton(
+                  "goto_select_tissuetypes",
+                  label = "Previous",
+                  icon = icon("angle-left"),
+                  class = "btn-primary",
+                ),
+                shiny::actionButton(
+                  "add_all_for_deconv",
+                  label = "Select Celltypes",
+                  icon = icon("check"),
+                  class = "btn-primary",
+                  style = "color: white; background-color: #28a745; border-color: #28a745;",
                   ),
-                  shiny::column(
-                    3,
-                    shiny::actionButton(
-                      "add_all_for_deconv",
-                      label = "Select Celltypes",
-                      icon = icon("check"),
-                      class = "btn-primary",
-                      style = "color: white; background-color: #28a745; border-color: #28a745;",
-                    )
-                  ),
-                )
+                shiny::actionButton(
+                  "goto_select_removedegs",
+                  label = "Next",
+                  icon = icon("angle-right"),
+                  class = "btn-primary",
+                ),
               )
             ),
             column(
