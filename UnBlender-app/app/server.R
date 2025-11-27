@@ -1,35 +1,24 @@
-##### LIBRARY LOADING #####
-
 library(shiny)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(data.table)
-# #library(spsComps)
-#
 library(MuSiC)
 library(SingleCellExperiment)
 library(Seurat)
 library(tibble)
-#
-#
-#
-# ##### CONFIGURATION #####
-#
+
 source("config.r")
 source(paste0(basedir, "functions.r"))
 
 # Set he maximum upload size
 options(shiny.maxRequestSize = 60 * 1024^2)
-#
-# ##### DATA READING ####
-
+# Silence warnings (I know what i'm doing)
+options(shiny.devmode = FALSE)
 # Read the down sampled dat structure
 so_small <- readRDS(paste0(datadir, "so_downs_5000.rds"))
-
 # Read the files with tissue types for the bulk RNA
 tissue_types <- list.files(paste0(datadir, "pseudobulks/"))
-
 # Read a simplefied version the cell annotation dat for building the menu
 cell_annotations <- read.table(
   paste0(datadir, "cellannotations.txt"),
@@ -37,8 +26,7 @@ cell_annotations <- read.table(
   sep = "\t"
 )
 
-
-### Create some default data sets with the associated clusters
+# Create some default data sets with the associated clusters
 mytissue <- "parenchyma"
 # A set of immune cells
 immune <- cell_annotations %>%
@@ -91,7 +79,7 @@ shinyServer(function(input, output, session) {
 
   observeEvent(input$goto_start, {
     updateTabItems(session, "tabs", "select_tissue")
-  }) 
+  })
 
   ##### BUILDING COLLECTIONS #####
 
@@ -117,7 +105,6 @@ shinyServer(function(input, output, session) {
   observeEvent(input$goto_select_removedegs, {
     updateTabItems(session, "tabs", "remove_degs")
   })
-
 
   output$no_tissue_error <- renderUI({
     x <- ""
@@ -164,7 +151,7 @@ shinyServer(function(input, output, session) {
         filter(sample_type %in% c("brush"), arc %in% c("Distal Bronchi"))
     }
 
-    mytree <- dfToTree(
+    dfToTree(
       current_tree,
       hierarchy = c("level1", "level2", "level3", "level4")
     )

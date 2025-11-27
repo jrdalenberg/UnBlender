@@ -226,7 +226,7 @@ body <- dashboardBody(
                 ),
                 shiny::actionButton(
                   "add_all_for_deconv",
-                  label = "Select Celltypes",
+                  label = "Select & Preview",
                   icon = icon("check"),
                   class = "btn-primary",
                   style = "color: white; background-color: #28a745; border-color: #28a745;",
@@ -307,7 +307,6 @@ body <- dashboardBody(
         )
       )
     ),
-
     # Remove DEGS dashboard body
     tabItem(
       tabName = "remove_degs",

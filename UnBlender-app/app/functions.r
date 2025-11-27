@@ -143,7 +143,6 @@ music_prop2 <- function(
   normalize = FALSE,
   ...
 ) {
-  print("I am here")
   print(bulk.mtx[1:4, 1:2])
   bulk.gene = rownames(bulk.mtx)[rowMeans(bulk.mtx) != 0]
   print(bulk.gene[1:10])
@@ -352,7 +351,6 @@ music_basis2 <- function(
   if (non.zero) {
     x <- x[rowSums(counts(x)) > 0, ]
   }
-  print("I am in basis2")
   clusters <- as.character(colData(x)[, clusters])
   samples <- as.character(colData(x)[, samples])
   M.theta <- sapply(unique(clusters), function(ct) {
