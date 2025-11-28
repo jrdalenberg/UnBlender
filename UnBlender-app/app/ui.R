@@ -333,10 +333,20 @@ body <- dashboardBody(
                     collapse = "\n"
                   )
                 ),
-                actionButton(
+                shiny::actionButton(
                   "remove_degs",
-                  "Filter"
-                )
+                  label = "Filter",
+                  icon = icon("filter"),
+                  class = "btn-primary",
+                  style = "color: black; background-color: #ffc107; border-color: #ffc107;"
+
+                ),
+                shiny::actionButton(
+                  "goto_select_validate",
+                  label = "Next",
+                  icon = icon("angle-right"),
+                  class = "btn-primary",
+                ),
               )
             ),
             column(
@@ -531,7 +541,7 @@ This data set contains 91 samples from bronchial biopsies from moderate and seve
       tabsetPanel(
         tabPanel(
           "StackedBar",
-          checkboxInput("flip_stackedbar", "Flip chart"),
+          # checkboxInput("flip_stackedbar", "Flip chart"),
           jqui_resizable(plotOutput("cibersort_stackedbar"))
         ),
 

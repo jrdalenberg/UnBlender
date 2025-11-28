@@ -529,7 +529,7 @@ run_music_algorithm2 <- function(bulk_data, sce_object, celltypes) {
     clusters = "new_clusters",
     samples = 'sample',
     select.ct = celltypes,
-    verbose = T
+    verbose = F
   )
 }
 
@@ -721,16 +721,18 @@ plot_corr_df <- function(
   p <- p + theme_bw()
   p <- p + theme(axis.text = element_text(size = 12))
   p <- p + theme(strip.text = element_text(size = 14))
-  p <- p + theme(axis.title = element_text(size = 14))
+  p <- p + theme(axis.title = element_text(size = 14)) +
   p
 }
 
 plot_decision_cor <- function(correlation_df, flip = FALSE) {
-  tp <- correlation_df %>% dplyr::select(cluster_name, mycor) %>% distinct()
+  tp <- correlation_df %>% 
+    dplyr::select(cluster_name, mycor) %>% 
+    distinct()
 
-  p <- ggplot(tp, aes(x = reorder(cluster_name, mycor), y = mycor))
-
-  p <- p +
+  p <- ggplot(tp, 
+    aes(x = reorder(cluster_name, mycor),
+    y = mycor)) +
     annotate(
       geom = 'rect',
       ymin = 0.7,
@@ -739,8 +741,7 @@ plot_decision_cor <- function(correlation_df, flip = FALSE) {
       xmax = Inf,
       fill = 'darkolivegreen2',
       alpha = 1
-    )
-  p <- p +
+    ) +
     annotate(
       geom = 'rect',
       ymin = -Inf,
@@ -749,27 +750,27 @@ plot_decision_cor <- function(correlation_df, flip = FALSE) {
       xmax = Inf,
       fill = 'sandybrown',
       alpha = 1
-    )
-  p <- p + geom_point(size = 5)
-  p <- p + labs(x = "", y = "Correlation")
-  if (flip == TRUE) {
-    p <- p + coord_flip()
-  }
-  p <- p + theme_bw()
-  p <- p + theme(axis.text = element_text(size = 12))
-  p <- p + theme(strip.text = element_text(size = 14))
-  p <- p + theme(axis.title = element_text(size = 14))
+    ) + 
+    geom_point(size = 5) + 
+    labs(x = "", y = "Correlation") +
+    theme_bw() +
+    theme(axis.text = element_text(size = 12)) + 
+    theme(strip.text = element_text(size = 14)) +
+    theme(axis.title = element_text(size = 14)) + 
+    coord_flip()
   p
 }
 
-
 plot_decision_mape <- function(mape, flip = FALSE) {
-  tp <- mape %>% dplyr::select(cluster_name, mape) %>% distinct()
+  tp <- mape %>% 
+    dplyr::select(cluster_name, mape) %>% 
+    distinct()
 
-  p <- ggplot(tp, aes(x = reorder(cluster_name, mape), y = mape))
-
-  p <- p + ylim(0, NA)
-  p <- p +
+  p <- ggplot(tp, 
+    aes(
+      x = reorder(cluster_name, mape), 
+      y = mape)) +
+    ylim(0, NA) +
     annotate(
       geom = 'rect',
       ymin = -Inf,
@@ -778,8 +779,7 @@ plot_decision_mape <- function(mape, flip = FALSE) {
       xmax = Inf,
       fill = 'darkolivegreen2',
       alpha = 1
-    )
-  p <- p +
+    ) +
     annotate(
       geom = 'rect',
       ymin = 1,
@@ -788,49 +788,48 @@ plot_decision_mape <- function(mape, flip = FALSE) {
       xmax = Inf,
       fill = 'sandybrown',
       alpha = 1
-    )
-
-  p <- p + geom_point(size = 5)
-  p <- p + labs(x = "", y = "MAPE")
-  if (flip == TRUE) {
-    p <- p + coord_flip()
-  }
-  p <- p + theme_bw()
-  p <- p + theme(axis.text = element_text(size = 12))
-  p <- p + theme(strip.text = element_text(size = 14))
-  p <- p + theme(axis.title = element_text(size = 14))
+    ) +
+    geom_point(size = 5) +
+    labs(x = "", y = "MAPE") + 
+    theme_bw() + 
+    theme(axis.text = element_text(size = 12)) +
+    theme(strip.text = element_text(size = 14)) +
+    theme(axis.title = element_text(size = 14)) +
+    coord_flip()
   p
 }
-
 
 ####### MUSIC EVALUATION VISUALISATION #######
 
 rawdata_music <- function(x, pivot_it = F) {
-  x <- x %>% dplyr::select(-resname)
+  x <- x %>% 
+    dplyr::select(-resname)
   if (pivot_it == T) {
-    x <- x %>% pivot_wider(names_from = "cell_type", values_from = "fraction")
-  }
+    x <- x %>% 
+      pivot_wider(
+        names_from = "cell_type", 
+        values_from = "fraction")}
   x
 }
 
 dotplot_music <- function(x) {
-  # print(x)
-  p <- ggplot(x, aes(x = cell_type, y = fraction))
-  p <- p + geom_point()
-
-  p <- p + facet_wrap(. ~ sample_id)
-  p <- p + coord_flip()
+  p <- ggplot(x, aes(x = cell_type, y = fraction)) +
+    geom_point() +
+    facet_wrap(. ~ sample_id) + 
+    coord_flip()
   p
 }
 
 
 heatmap_music <- function(x, show_fractions = FALSE, flipit = FALSE) {
-  print(x)
   p <- ggplot(
     x,
-    aes(x = cell_type, y = sample_id, fill = fraction, label = fraction)
-  )
-  p <- p + geom_tile()
+    aes(
+      x = cell_type, 
+      y = sample_id, 
+      fill = fraction, 
+      label = fraction)
+  ) + geom_tile()
   if (show_fractions == T) {
     p < p + geom_text(size = 2)
   }

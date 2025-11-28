@@ -240,6 +240,13 @@ shinyServer(function(input, output, session) {
     #         print(str_unmatched)
   })
 
+  # observeEvents(input$goto_select_validate, {
+  #   updateTabItems(session, "tabs", "current_sets")
+  # })
+
+  observeEvent(input$goto_select_validate, {
+    updateTabItems(session, "tabs", "current_sets")
+  })
   ##### EVALUATING COLLECTIONS  ######
 
   error_check <- reactive({
@@ -276,14 +283,10 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    print("IS DISABLE")
-    print(mydisabled)
-
     actionButton('evaluate', "Evaluate", disabled = mydisabled)
   })
 
   run_music_for_gt <- function(so_small, tissue_type) {
-    message("Getting ground truth")
 
     so_small_sub <- create_subset_so(so_small, tissue_type)
 
@@ -350,6 +353,8 @@ shinyServer(function(input, output, session) {
         )
       }
     )
+    Sys.sleep(1)
+    updateTabItems(session, "tabs", "results_evaluation")
   })
 
   ###### Visualisation #####
@@ -559,7 +564,6 @@ shinyServer(function(input, output, session) {
     }
     if (input$use_example_file == FALSE) {
       #NO example
-      print("No example file choosen")
       user_data$bulk <- NULL
     }
   })
@@ -575,8 +579,6 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    print("IS DISABLE")
-    print(mydisabled)
     actionButton("run_music", "Deconvolute your data", disabled = mydisabled)
   })
 
@@ -613,15 +615,12 @@ shinyServer(function(input, output, session) {
   })
 
   output$upload_error <- renderUI({
-    print("Upload error")
-    # print(user_data$bulk)
     req(is.null(user_data$bulk))
     user_data$upload_error <- 'No data uploaded'
     error_message(user_data$upload_error)
   })
 
   output$deconv_error <- renderUI({
-    print("Deconveroor")
     print(user_data$deconv_error)
     user_data$deconv_error
   })
@@ -663,11 +662,11 @@ shinyServer(function(input, output, session) {
         df$duprow <- duplicated(df$gene)
 
         df2 <- df %>% dplyr::filter(duprow == FALSE, !is.na(gene))
-        print(df2[1:4, 1:4])
+        # print(df2[1:4, 1:4])
         lmx_bulk <- as.matrix(
           df2 %>% dplyr::select(-duprow) %>% column_to_rownames("gene")
         )
-        print(lmx_bulk[1:4, 1:4])
+        # print(lmx_bulk[1:4, 1:4])
 
         # lmx_bulk <- data.matrix(as_tibble(df) %>% column_to_rownames("V1"))
 
@@ -696,11 +695,11 @@ shinyServer(function(input, output, session) {
           },
           error = function(e) {
             # return a safeError if a parsing error occurs
-            print("Here is the safe error")
+            # print("Here is the safe error")
             err <- 1
             user_data$deconv_error <- deconv_error(safeError(e))
-            print(safeError(e))
-            print("This was the safer error")
+            # print(safeError(e))
+            # print("This was the safer error")
             req(err == 0)
             stop(safeError(e))
           }
@@ -723,8 +722,9 @@ shinyServer(function(input, output, session) {
           )
 
         user_data$music_results <- tp
-
         message("done")
+        Sys.sleep(1)
+        updateTabItems(session, "tabs", "user_results")
       },
 
       message = function(m) {
@@ -783,8 +783,8 @@ shinyServer(function(input, output, session) {
     # stacked barchart
     req(user_data$music_results)
     tp <- user_data$music_results
-    p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
-
+    # p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
+    p <- stacked_bar_music(tp, flipit = TRUE)
     p
   })
 })
