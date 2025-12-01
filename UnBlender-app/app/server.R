@@ -84,7 +84,7 @@ shinyServer(function(input, output, session) {
   ##### BUILDING COLLECTIONS #####
 
   #### Select tissue ####
-  observeEvent(input$confirm_tissue, {
+  observeEvent(input$tissue_type, {
     # Check whether there is a an input for tissue tyoe
     req(input$tissue_type)
     user_data$tissue_type <- input$tissue_type
@@ -158,7 +158,7 @@ shinyServer(function(input, output, session) {
   })
 
   # Method to ensure that the selected cells from the tree are added as individual collections
-  observeEvent(input$add_all_for_deconv, {
+  observeEvent(input$mytree, {
     myids <- get_selected(input$mytree, format = "names") %>% unlist()
     myids <- myids[myids %in% (cell_annotations %>% pull(level4))] %>% unique()
     # Only proceed if any IDS are left
@@ -283,7 +283,15 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    actionButton('evaluate', "Evaluate", disabled = mydisabled)
+    # actionButton('evaluate', "Evaluate", disabled = mydisabled)
+    shiny::actionButton(
+      "evaluate",
+      label = "Evaluate cell collections",
+      icon = icon("check"),
+      class = "btn-primary",
+      style = "color: white; background-color: #28a745; border-color: #28a745;",
+      disabled = mydisabled
+      )
   })
 
   run_music_for_gt <- function(so_small, tissue_type) {
@@ -556,6 +564,10 @@ shinyServer(function(input, output, session) {
     #})
   })
 
+  shiny::observeEvent(input$goto_celltype_deconvolution,{
+    updateTabItems(session, "tabs", "upload_data")
+  })
+
   observeEvent(input$use_example_file, {
     if (input$use_example_file == TRUE) {
       df <- fread(paste0(datadir, "/example_gse76225.csv"))
@@ -750,7 +762,6 @@ shinyServer(function(input, output, session) {
 
   # create heatmap of cibersort results (fractions)
   output$music_results <- DT::renderDataTable({
-    #tp <- readRDS(paste0(datadir,"music_output_processed.rds"))
     req(user_data$music_results)
     tp <- user_data$music_results
     toshow <- rawdata_music(tp, pivot_it = input$pivot_music)

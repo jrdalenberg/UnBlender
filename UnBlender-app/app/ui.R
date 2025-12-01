@@ -158,13 +158,13 @@ body <- dashboardBody(
               label = "Tissue type",
               choices = tissues
             ),
-            shiny::actionButton(
-              "confirm_tissue",
-              label = "Select Tissue",
-              icon = icon("check"),
-              class = "btn-primary",
-              style = "color: white; background-color: #28a745; border-color: #28a745;",
-            ),
+            # shiny::actionButton(
+            #   "confirm_tissue",
+            #   label = "Select Tissue",
+            #   icon = icon("check"),
+            #   class = "btn-primary",
+            #   style = "color: white; background-color: #28a745; border-color: #28a745;",
+            # ),
             # functionality for moving to next page.
             shiny::actionButton(
               "goto_select_celltypes",
@@ -224,13 +224,13 @@ body <- dashboardBody(
                   icon = icon("angle-left"),
                   class = "btn-primary",
                 ),
-                shiny::actionButton(
-                  "add_all_for_deconv",
-                  label = "Select & Preview",
-                  icon = icon("check"),
-                  class = "btn-primary",
-                  style = "color: white; background-color: #28a745; border-color: #28a745;",
-                  ),
+                # shiny::actionButton(
+                #   "add_all_for_deconv",
+                #   label = "Select & Preview",
+                #   icon = icon("check"),
+                #   class = "btn-primary",
+                #   style = "color: white; background-color: #28a745; border-color: #28a745;",
+                #   ),
                 shiny::actionButton(
                   "goto_select_removedegs",
                   label = "Next",
@@ -334,12 +334,17 @@ body <- dashboardBody(
                   )
                 ),
                 shiny::actionButton(
+                  "goto_select_celltypes",
+                  label = "Previous",
+                  icon = icon("angle-left"),
+                  class = "btn-primary",
+                ),
+                shiny::actionButton(
                   "remove_degs",
                   label = "Filter",
                   icon = icon("filter"),
                   class = "btn-primary",
                   style = "color: black; background-color: #ffc107; border-color: #ffc107;"
-
                 ),
                 shiny::actionButton(
                   "goto_select_validate",
@@ -488,7 +493,21 @@ body <- dashboardBody(
             )
           )
         )
-      )
+      ),
+      shiny::actionButton(
+        "goto_select_celltypes",
+        label = "Re-select celltypes",
+        style = "color: black; background-color: #ffc107; border-color: #ffc107;",
+        icon = icon("angle-left"),
+        class = "btn-primary",
+      ),
+      shiny::actionButton(
+        "goto_celltype_deconvolution",
+        label = "Deconvolute celltypes",
+        icon = icon("angle-right"),
+        style = "color: white; background-color: #28a745; border-color: #28a745;",
+        class = "btn-primary",
+      ),
     ),
     # Deconvolute dashboard body
      # Results dashboard body
