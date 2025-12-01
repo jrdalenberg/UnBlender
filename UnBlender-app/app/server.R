@@ -11,6 +11,7 @@ library(tibble)
 source("config.r")
 source(paste0(basedir, "functions.r"))
 
+set.seed(123)
 # Set he maximum upload size
 options(shiny.maxRequestSize = 60 * 1024^2)
 # Silence warnings (I know what i'm doing)
