@@ -591,7 +591,10 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    actionButton("run_music", "Deconvolute your data", disabled = mydisabled)
+    actionButton("run_music", 
+      "Deconvolute your data",
+      style = "color: white; background-color: #28a745; border-color: #28a745;",
+      disabled = mydisabled)
   })
 
   output$music_error <- renderUI({
