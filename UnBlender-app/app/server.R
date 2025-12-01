@@ -1,35 +1,24 @@
-##### LIBRARY LOADING #####
-
 library(shiny)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(data.table)
-# #library(spsComps)
-#
 library(MuSiC)
 library(SingleCellExperiment)
 library(Seurat)
 library(tibble)
-#
-#
-#
-# ##### CONFIGURATION #####
-#
+
 source("config.r")
 source(paste0(basedir, "functions.r"))
 
 # Set he maximum upload size
 options(shiny.maxRequestSize = 60 * 1024^2)
-#
-# ##### DATA READING ####
-
+# Silence warnings (I know what i'm doing)
+options(shiny.devmode = FALSE)
 # Read the down sampled dat structure
 so_small <- readRDS(paste0(datadir, "so_downs_5000.rds"))
-
 # Read the files with tissue types for the bulk RNA
 tissue_types <- list.files(paste0(datadir, "pseudobulks/"))
-
 # Read a simplefied version the cell annotation dat for building the menu
 cell_annotations <- read.table(
   paste0(datadir, "cellannotations.txt"),
@@ -37,8 +26,7 @@ cell_annotations <- read.table(
   sep = "\t"
 )
 
-
-### Create some default data sets with the associated clusters
+# Create some default data sets with the associated clusters
 mytissue <- "parenchyma"
 # A set of immune cells
 immune <- cell_annotations %>%
@@ -89,10 +77,14 @@ shinyServer(function(input, output, session) {
     includeMarkdown(file.path(basedir, "www/intro.md"))
   })
 
+  observeEvent(input$goto_start, {
+    updateTabItems(session, "tabs", "select_tissue")
+  })
+
   ##### BUILDING COLLECTIONS #####
 
   #### Select tissue ####
-  observeEvent(input$confirm_tissue, {
+  observeEvent(input$tissue_type, {
     # Check whether there is a an input for tissue tyoe
     req(input$tissue_type)
     user_data$tissue_type <- input$tissue_type
@@ -101,7 +93,18 @@ shinyServer(function(input, output, session) {
     user_data$collections <- NULL
   })
 
+  observeEvent(input$goto_select_celltypes, {
+    updateTabItems(session, "tabs", "create_sets")
+  })
+
   #### Select cells ####
+  observeEvent(input$goto_select_tissuetypes, {
+    updateTabItems(session, "tabs", "select_tissue")
+  })
+
+  observeEvent(input$goto_select_removedegs, {
+    updateTabItems(session, "tabs", "remove_degs")
+  })
 
   output$no_tissue_error <- renderUI({
     x <- ""
@@ -148,14 +151,14 @@ shinyServer(function(input, output, session) {
         filter(sample_type %in% c("brush"), arc %in% c("Distal Bronchi"))
     }
 
-    mytree <- dfToTree(
+    dfToTree(
       current_tree,
       hierarchy = c("level1", "level2", "level3", "level4")
     )
   })
 
   # Method to ensure that the selected cells from the tree are added as individual collections
-  observeEvent(input$add_all_for_deconv, {
+  observeEvent(input$mytree, {
     myids <- get_selected(input$mytree, format = "names") %>% unlist()
     myids <- myids[myids %in% (cell_annotations %>% pull(level4))] %>% unique()
     # Only proceed if any IDS are left
@@ -237,6 +240,13 @@ shinyServer(function(input, output, session) {
     #         print(str_unmatched)
   })
 
+  # observeEvents(input$goto_select_validate, {
+  #   updateTabItems(session, "tabs", "current_sets")
+  # })
+
+  observeEvent(input$goto_select_validate, {
+    updateTabItems(session, "tabs", "current_sets")
+  })
   ##### EVALUATING COLLECTIONS  ######
 
   error_check <- reactive({
@@ -273,14 +283,18 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    print("IS DISABLE")
-    print(mydisabled)
-
-    actionButton('evaluate', "Evaluate", disabled = mydisabled)
+    # actionButton('evaluate', "Evaluate", disabled = mydisabled)
+    shiny::actionButton(
+      "evaluate",
+      label = "Evaluate cell collections",
+      icon = icon("check"),
+      class = "btn-primary",
+      style = "color: white; background-color: #28a745; border-color: #28a745;",
+      disabled = mydisabled
+      )
   })
 
   run_music_for_gt <- function(so_small, tissue_type) {
-    message("Getting ground truth")
 
     so_small_sub <- create_subset_so(so_small, tissue_type)
 
@@ -347,6 +361,8 @@ shinyServer(function(input, output, session) {
         )
       }
     )
+    Sys.sleep(1)
+    updateTabItems(session, "tabs", "results_evaluation")
   })
 
   ###### Visualisation #####
@@ -548,6 +564,10 @@ shinyServer(function(input, output, session) {
     #})
   })
 
+  shiny::observeEvent(input$goto_celltype_deconvolution,{
+    updateTabItems(session, "tabs", "upload_data")
+  })
+
   observeEvent(input$use_example_file, {
     if (input$use_example_file == TRUE) {
       df <- fread(paste0(datadir, "/example_gse76225.csv"))
@@ -556,7 +576,6 @@ shinyServer(function(input, output, session) {
     }
     if (input$use_example_file == FALSE) {
       #NO example
-      print("No example file choosen")
       user_data$bulk <- NULL
     }
   })
@@ -572,9 +591,10 @@ shinyServer(function(input, output, session) {
     if (is.null(user_data$collections)) {
       mydisabled <- TRUE
     }
-    print("IS DISABLE")
-    print(mydisabled)
-    actionButton("run_music", "Deconvolute your data", disabled = mydisabled)
+    actionButton("run_music", 
+      "Deconvolute your data",
+      style = "color: white; background-color: #28a745; border-color: #28a745;",
+      disabled = mydisabled)
   })
 
   output$music_error <- renderUI({
@@ -610,15 +630,12 @@ shinyServer(function(input, output, session) {
   })
 
   output$upload_error <- renderUI({
-    print("Upload error")
-    # print(user_data$bulk)
     req(is.null(user_data$bulk))
     user_data$upload_error <- 'No data uploaded'
     error_message(user_data$upload_error)
   })
 
   output$deconv_error <- renderUI({
-    print("Deconveroor")
     print(user_data$deconv_error)
     user_data$deconv_error
   })
@@ -660,11 +677,11 @@ shinyServer(function(input, output, session) {
         df$duprow <- duplicated(df$gene)
 
         df2 <- df %>% dplyr::filter(duprow == FALSE, !is.na(gene))
-        print(df2[1:4, 1:4])
+        # print(df2[1:4, 1:4])
         lmx_bulk <- as.matrix(
           df2 %>% dplyr::select(-duprow) %>% column_to_rownames("gene")
         )
-        print(lmx_bulk[1:4, 1:4])
+        # print(lmx_bulk[1:4, 1:4])
 
         # lmx_bulk <- data.matrix(as_tibble(df) %>% column_to_rownames("V1"))
 
@@ -693,11 +710,11 @@ shinyServer(function(input, output, session) {
           },
           error = function(e) {
             # return a safeError if a parsing error occurs
-            print("Here is the safe error")
+            # print("Here is the safe error")
             err <- 1
             user_data$deconv_error <- deconv_error(safeError(e))
-            print(safeError(e))
-            print("This was the safer error")
+            # print(safeError(e))
+            # print("This was the safer error")
             req(err == 0)
             stop(safeError(e))
           }
@@ -720,8 +737,9 @@ shinyServer(function(input, output, session) {
           )
 
         user_data$music_results <- tp
-
         message("done")
+        Sys.sleep(1)
+        updateTabItems(session, "tabs", "user_results")
       },
 
       message = function(m) {
@@ -747,7 +765,6 @@ shinyServer(function(input, output, session) {
 
   # create heatmap of cibersort results (fractions)
   output$music_results <- DT::renderDataTable({
-    #tp <- readRDS(paste0(datadir,"music_output_processed.rds"))
     req(user_data$music_results)
     tp <- user_data$music_results
     toshow <- rawdata_music(tp, pivot_it = input$pivot_music)
@@ -780,8 +797,8 @@ shinyServer(function(input, output, session) {
     # stacked barchart
     req(user_data$music_results)
     tp <- user_data$music_results
-    p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
-
+    # p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
+    p <- stacked_bar_music(tp, flipit = TRUE)
     p
   })
 })

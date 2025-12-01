@@ -112,6 +112,14 @@ body <- dashboardBody(
             fluidRow(
               column(
                 6,
+                hr(),
+                shiny::actionButton(
+                  "goto_start",
+                  label = "Get Started!",
+                  icon = icon("check"),
+                  class = "btn-primary",
+                  style = "color: white; background-color: #28a745; border-color: #28a745;",
+                    ),
                 uiOutput(
                   "intro"
                 )
@@ -133,28 +141,38 @@ body <- dashboardBody(
       )
     ),
     # Create reference page body
-    # Select tissue
+    # PAGE 1 - Select Tissue
     tabItem(
       tabName = "select_tissue",
       fluidRow(
         column(
           3,
           mybox(
-            HTML(
+            shiny::HTML(
               tissue_select_help()
             ),
             help = 'tissue_select_help',
             title = "Select sample type",
-            selectizeInput(
+            shiny::selectizeInput(
               "tissue_type",
               label = "Tissue type",
               choices = tissues
             ),
-            actionButton(
-              "confirm_tissue",
-              label = "Confirm"
+            # shiny::actionButton(
+            #   "confirm_tissue",
+            #   label = "Select Tissue",
+            #   icon = icon("check"),
+            #   class = "btn-primary",
+            #   style = "color: white; background-color: #28a745; border-color: #28a745;",
+            # ),
+            # functionality for moving to next page.
+            shiny::actionButton(
+              "goto_select_celltypes",
+              label = "Next",
+              icon = icon("angle-right"),
+              class = "btn-primary",
             ),
-            uiOutput(
+            shiny::uiOutput(
               "tissue_confirm"
             )
           )
@@ -192,7 +210,6 @@ body <- dashboardBody(
                 uiOutput(
                   "no_tissue_error"
                 ),
-                hr(),
                 # Create the tree for sample selection
                 shinyTree(
                   "mytree",
@@ -201,12 +218,25 @@ body <- dashboardBody(
                   themeIcons = F
                 ),
                 hr(),
-                actionButton(
-                  "add_all_for_deconv",
-                  HTML(
-                    "Add selected cells <br> to deconvolution set"
-                  )
-                )
+                shiny::actionButton(
+                  "goto_select_tissuetypes",
+                  label = "Previous",
+                  icon = icon("angle-left"),
+                  class = "btn-primary",
+                ),
+                # shiny::actionButton(
+                #   "add_all_for_deconv",
+                #   label = "Select & Preview",
+                #   icon = icon("check"),
+                #   class = "btn-primary",
+                #   style = "color: white; background-color: #28a745; border-color: #28a745;",
+                #   ),
+                shiny::actionButton(
+                  "goto_select_removedegs",
+                  label = "Next",
+                  icon = icon("angle-right"),
+                  class = "btn-primary",
+                ),
               )
             ),
             column(
@@ -277,7 +307,6 @@ body <- dashboardBody(
         )
       )
     ),
-
     # Remove DEGS dashboard body
     tabItem(
       tabName = "remove_degs",
@@ -304,10 +333,25 @@ body <- dashboardBody(
                     collapse = "\n"
                   )
                 ),
-                actionButton(
+                shiny::actionButton(
+                  "goto_select_celltypes",
+                  label = "Previous",
+                  icon = icon("angle-left"),
+                  class = "btn-primary",
+                ),
+                shiny::actionButton(
                   "remove_degs",
-                  "Filter"
-                )
+                  label = "Filter",
+                  icon = icon("filter"),
+                  class = "btn-primary",
+                  style = "color: black; background-color: #ffc107; border-color: #ffc107;"
+                ),
+                shiny::actionButton(
+                  "goto_select_validate",
+                  label = "Next",
+                  icon = icon("angle-right"),
+                  class = "btn-primary",
+                ),
               )
             ),
             column(
@@ -449,7 +493,21 @@ body <- dashboardBody(
             )
           )
         )
-      )
+      ),
+      shiny::actionButton(
+        "goto_select_celltypes",
+        label = "Re-select celltypes",
+        style = "color: black; background-color: #ffc107; border-color: #ffc107;",
+        icon = icon("angle-left"),
+        class = "btn-primary",
+      ),
+      shiny::actionButton(
+        "goto_celltype_deconvolution",
+        label = "Deconvolute celltypes",
+        icon = icon("angle-right"),
+        style = "color: white; background-color: #28a745; border-color: #28a745;",
+        class = "btn-primary",
+      ),
     ),
     # Deconvolute dashboard body
      # Results dashboard body
@@ -502,7 +560,7 @@ This data set contains 91 samples from bronchial biopsies from moderate and seve
       tabsetPanel(
         tabPanel(
           "StackedBar",
-          checkboxInput("flip_stackedbar", "Flip chart"),
+          # checkboxInput("flip_stackedbar", "Flip chart"),
           jqui_resizable(plotOutput("cibersort_stackedbar"))
         ),
 
