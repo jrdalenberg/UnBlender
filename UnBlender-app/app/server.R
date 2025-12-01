@@ -217,8 +217,12 @@ shinyServer(function(input, output, session) {
     mydf <- bind_rows(mylist)
     user_data$collection_table <- mydf
     # print(mydf)
-    DT::datatable(mydf, rownames = F, filter = "top")
-  })
+    DT::datatable(mydf, 
+      rownames = F, 
+      filter = "top",
+      options = list(pageLength = 100))
+  }
+)
 
   #### Remove DEGs ####
 
