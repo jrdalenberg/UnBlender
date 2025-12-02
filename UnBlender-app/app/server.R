@@ -798,12 +798,15 @@ shinyServer(function(input, output, session) {
     p
   })
 
-  output$cibersort_stackedbar <- renderPlot({
+  output$cibersort_stackedbar <- renderPlotly({
     # stacked barchart
     req(user_data$music_results)
     tp <- user_data$music_results
     # p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
     p <- stacked_bar_music(tp, flipit = TRUE)
-    p
+    ggplotly(p) %>% 
+      plotly::layout(
+        yaxis = list(showticklabels = FALSE, ticks = "", showline = FALSE)
+      )
   })
 })

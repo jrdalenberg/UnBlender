@@ -561,7 +561,9 @@ This data set contains 91 samples from bronchial biopsies from moderate and seve
         tabPanel(
           "StackedBar",
           # checkboxInput("flip_stackedbar", "Flip chart"),
-          jqui_resizable(plotOutput("cibersort_stackedbar"))
+          # jqui_resizable(plotOutput("cibersort_stackedbar"))
+          jqui_resizable(plotlyOutput("cibersort_stackedbar",
+          height = "1000px"))
         ),
 
         tabPanel(

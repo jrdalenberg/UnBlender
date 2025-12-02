@@ -3,6 +3,7 @@ library(tidyr)
 library(dplyr)
 library(SingleCellExperiment)
 library(MuSiC)
+library(plotly)
 
 ##### HTML functions ######
 
