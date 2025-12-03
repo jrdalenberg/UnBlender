@@ -798,7 +798,6 @@ plot_decision_mape <- function(mape, flip = FALSE) {
 }
 
 ####### MUSIC EVALUATION VISUALISATION #######
-
 rawdata_music <- function(x, pivot_it = F) {
   x <- x %>% 
     dplyr::select(-resname)

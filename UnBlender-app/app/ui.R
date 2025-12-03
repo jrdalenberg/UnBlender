@@ -158,13 +158,6 @@ body <- dashboardBody(
               label = "Tissue type",
               choices = tissues
             ),
-            # shiny::actionButton(
-            #   "confirm_tissue",
-            #   label = "Select Tissue",
-            #   icon = icon("check"),
-            #   class = "btn-primary",
-            #   style = "color: white; background-color: #28a745; border-color: #28a745;",
-            # ),
             # functionality for moving to next page.
             shiny::actionButton(
               "goto_select_celltypes",
@@ -563,14 +556,18 @@ This data set contains 91 samples from bronchial biopsies from moderate and seve
           # checkboxInput("flip_stackedbar", "Flip chart"),
           # jqui_resizable(plotOutput("cibersort_stackedbar"))
           jqui_resizable(plotlyOutput("cibersort_stackedbar",
-          height = "1000px"))
+          height = "900px"))
         ),
-
-        tabPanel(
-          "Heatmap",
-          checkboxInput("flip_heatmap", "Flip axis"),
-          jqui_resizable(plotOutput("heatmap"))
-        ),
+        # tabPanel(
+        #   "Heatmap",
+        #   checkboxInput("flip_heatmap", "Flip axis"),
+        #   jqui_resizable(plotOutput("dotplot"))
+        # ),
+        # tabPanel(
+        #   "Heatmap",
+        #   checkboxInput("flip_heatmap", "Flip axis"),
+        #   jqui_resizable(plotOutput("heatmap"))
+        # ),
         tabPanel(
           "Data",
           fluidRow(

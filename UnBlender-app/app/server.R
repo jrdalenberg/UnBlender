@@ -163,7 +163,7 @@ shinyServer(function(input, output, session) {
     myids <- get_selected(input$mytree, format = "names") %>% unlist()
     myids <- myids[myids %in% (cell_annotations %>% pull(level4))] %>% unique()
     # Only proceed if any IDS are left
-    req(myids)
+    user_data$collections <- list()
     for (myid in myids) {
       collection_name <- gsub(myid, pattern = "\\s+", replace = "_")
       user_data$collections[[collection_name]] <- myid
@@ -714,12 +714,8 @@ shinyServer(function(input, output, session) {
             )
           },
           error = function(e) {
-            # return a safeError if a parsing error occurs
-            # print("Here is the safe error")
             err <- 1
             user_data$deconv_error <- deconv_error(safeError(e))
-            # print(safeError(e))
-            # print("This was the safer error")
             req(err == 0)
             stop(safeError(e))
           }
@@ -784,25 +780,24 @@ shinyServer(function(input, output, session) {
       formatRound(columns = names(mycolnames), digits = 3)
   })
 
-  output$dotplot <- renderPlot({
-    req(user_data$music_results)
-    tp <- user_data$music_results
-    p <- dotplot_music(tp)
-    p
-  })
+  # output$dotplot <- renderPlot({
+  #   req(user_data$music_results)
+  #   tp <- user_data$music_results
+  #   p <- dotplot_music(tp)
+  #   p
+  # })
 
-  output$heatmap <- renderPlot({
-    req(user_data$music_results)
-    tp <- user_data$music_results
-    p <- heatmap_music(tp, flipit = input$flip_heatmap)
-    p
-  })
+  # output$heatmap <- renderPlot({
+  #   req(user_data$music_results)
+  #   tp <- user_data$music_results
+  #   p <- heatmap_music(tp, flipit = input$flip_heatmap)
+  #   p
+  # })
 
   output$cibersort_stackedbar <- renderPlotly({
     # stacked barchart
     req(user_data$music_results)
     tp <- user_data$music_results
-    # p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
     p <- stacked_bar_music(tp, flipit = TRUE)
     ggplotly(p) %>% 
       plotly::layout(
