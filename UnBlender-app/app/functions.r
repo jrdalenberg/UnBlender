@@ -3,6 +3,7 @@ library(tidyr)
 library(dplyr)
 library(SingleCellExperiment)
 library(MuSiC)
+library(plotly)
 
 ##### HTML functions ######
 
@@ -706,22 +707,19 @@ plot_corr_df <- function(
   show_sample_ids = FALSE,
   show_se = FALSE
 ) {
-  #print(correlation_df)
   p <- ggplot(correlation_df, aes(x = percentage_true, y = percentage_found))
-  # p <- p + geom_line()
   p <- p + geom_point(size = 5, alpha = 0.6, color = "#0000ff")
   if (show_sample_ids == TRUE) {
     p <- p + geom_text(aes(label = sample_id), size = 5)
   }
   p <- p + geom_smooth(method = 'lm', formula = y ~ x, se = show_se)
   p <- p + facet_wrap(. ~ paste0(cluster_name, " : ", mycor), scales = "free")
-  # p <-p + theme_cyberlung
   p <- p +
     labs(title = "Correlation", y = "Estimated fraction", x = "True fraction")
   p <- p + theme_bw()
   p <- p + theme(axis.text = element_text(size = 12))
   p <- p + theme(strip.text = element_text(size = 14))
-  p <- p + theme(axis.title = element_text(size = 14)) +
+  p <- p + theme(axis.title = element_text(size = 14)) 
   p
 }
 
@@ -800,7 +798,6 @@ plot_decision_mape <- function(mape, flip = FALSE) {
 }
 
 ####### MUSIC EVALUATION VISUALISATION #######
-
 rawdata_music <- function(x, pivot_it = F) {
   x <- x %>% 
     dplyr::select(-resname)
