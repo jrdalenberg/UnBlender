@@ -9,6 +9,25 @@ library(plotly)
 
 #theme_cyberlung
 
+
+selected_genes_formatter <- function(collection){
+  #' This function pastes all selected genes provided in the collection together. 
+  #' It formats rows with multiple genes the following way: merge_name(gene1, gene2, gene3)
+  gene_list = c()
+  for (i in 1:length(collection)){
+      if (length(collection[[i]]) > 1){
+          merged_genes = paste0(collection[[i]], collapse = ", " )
+          formatted_text = paste0(names(collection[i]), "(", merged_genes, ")")
+          gene_list = c(gene_list, formatted_text)
+      }
+      else{
+          gene_list = c(gene_list, collection[[i]])
+      }
+  }
+  gene_string = paste(gene_list, collapse = "; ")
+  return (gene_string)
+}
+
 no_tissue_selected_error <- function(x) {
   error_message("Please select a tissue for building a cell collection.")
 }

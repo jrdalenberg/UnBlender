@@ -11,7 +11,7 @@ library(tibble)
 source("config.r")
 source(paste0(basedir, "functions.r"))
 
-set.seed(123)
+# set.seed(123)
 # Set he maximum upload size
 options(shiny.maxRequestSize = 60 * 1024^2)
 # Silence warnings (I know what i'm doing)
@@ -270,13 +270,12 @@ shinyServer(function(input, output, session) {
   })
 
   output$pre_validation_summary <- renderUI({
+    print(user_data$collections)
     HTML(
       paste0("<b>Tissue type:</b> ", user_data$tissue_type),
       '<br>',
-      paste0(
-        "<b>Cell collections: </b>",
-        paste0(user_data$collections, collapse = "; ")
-      )
+      "<b>Cell collections: </b>",
+      selected_genes_formatter(user_data$collections)
     )
   })
 
