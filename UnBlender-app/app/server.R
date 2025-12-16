@@ -755,7 +755,7 @@ shinyServer(function(input, output, session) {
 
   output$download_music_results <- downloadHandler(
     filename = function() {
-      "music_results.xlsx"
+      "deconvolution_results.xlsx"
     },
     content = function(file) {
       tp <- user_data$music_results
