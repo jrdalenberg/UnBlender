@@ -416,8 +416,11 @@ shinyServer(function(input, output, session) {
       "UnBlender_deconv_evaluation.txt"
     },
     content = function(file) {
-      # Load to write data
-      tp <- user_data$eval_results["mape"]
+      # Lmerge data
+      mape <- user_data$eval_results["mape"][[1]]
+      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor"))
+      uni_corr <- unique(corr)
+      tp <- mape %>% left_join(uni_corr, by="cluster_name")
 
       # Write mape to table
       write.table(tp, file, , sep="\t", quote=FALSE, row.names = FALSE)
