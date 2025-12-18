@@ -163,11 +163,8 @@ music_prop2 <- function(
   normalize = FALSE,
   ...
 ) {
-  print(bulk.mtx[1:4, 1:2])
   bulk.gene = rownames(bulk.mtx)[rowMeans(bulk.mtx) != 0]
-  print(bulk.gene[1:10])
   bulk.mtx = bulk.mtx[bulk.gene, ]
-  print(bulk.mtx[1:4, 1:4])
   if (is.null(markers)) {
     sc.markers = bulk.gene
   } else {
@@ -560,7 +557,6 @@ create_input_sce <- function(start_sce, new_clusters) {
     obj = new_clusters %>% pull(cluster_name),
     nm = new_clusters %>% pull(cluster_member)
   )
-  # print(toreplace)
   tomatch <- tibble(level4 = start_sce$ann_level_4)
   tomatch <- tomatch %>%
     dplyr::mutate(level4 = gsub(level4, pattern = "^\\d_", replace = "")) %>%
@@ -570,7 +566,6 @@ create_input_sce <- function(start_sce, new_clusters) {
       cluster_name = ifelse(is.na(cluster_name), "other", cluster_name)
     )
 
-  #print(tomatch)
   start_sce$new_clusters <- tomatch %>% pull(cluster_name)
   start_sce
 }
@@ -578,7 +573,6 @@ create_input_sce <- function(start_sce, new_clusters) {
 ####### SUBSETTING ############
 create_subset_so <- function(so_small, mytissue) {
   # message("Subsetting")
-  #   print(mytissue)
   #  mytissue <- user_data$tissue_type
 
   print(paste0("Subsetting for ", mytissue))
@@ -656,8 +650,6 @@ create_ground_truth <- function(so, tissue, user_clusters, sample_type) {
 }
 
 eval_ground_truth <- function(music_results, ground_truth) {
-  #print("I am in function eval_ground_truth")
-  #print(ground_truth)
   music_results <- music_results$Est.prop.weighted
   samples_pseudobulk <- row.names(music_results)
   samples_gt <- ground_truth %>% pull(sample_id) %>% unique()

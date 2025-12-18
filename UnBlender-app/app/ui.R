@@ -448,7 +448,11 @@ body <- dashboardBody(
                     "aggregate_mape_plot"
                   )
                 )
-              )
+              ),
+            
+            # Download button which can download the mape dataframe.
+            downloadButton("download_mape", "Download")
+
             ),
             column(
               6,
