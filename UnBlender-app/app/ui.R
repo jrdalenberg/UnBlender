@@ -449,10 +449,6 @@ body <- dashboardBody(
                   )
                 )
               ),
-            
-            # Download button which can download the mape dataframe.
-            downloadButton("download_mape", "Download")
-
             ),
             column(
               6,
@@ -498,6 +494,7 @@ body <- dashboardBody(
         icon = icon("angle-left"),
         class = "btn-primary",
       ),
+      downloadButton("download_mape", "Download"),
       shiny::actionButton(
         "goto_celltype_deconvolution",
         label = "Deconvolute celltypes",

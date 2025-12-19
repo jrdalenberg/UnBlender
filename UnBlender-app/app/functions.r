@@ -703,7 +703,10 @@ eval_ground_truth <- function(music_results, ground_truth) {
     )
 
   corr_df <- eval_results %>%
-    filter(percentage_true < iqr_high + H, percentage_true > iqr_low - H, ) %>%
+    filter(
+      percentage_true < iqr_high + H, 
+      percentage_true > iqr_low - H, 
+    ) %>%
     group_by(cluster_name) %>%
     dplyr::mutate(
       mycor = floor(100 * cor(percentage_found, percentage_true)) / 100
