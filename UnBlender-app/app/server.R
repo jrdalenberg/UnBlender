@@ -69,6 +69,11 @@ shinyServer(function(input, output, session) {
     #  eval_results = readRDS(paste0(datadir,"cached_result_ground_thruth_eval.rds"))
   )
 
+  session$onSessionEnded(function() {
+    message("Session ended; stopping app.")
+    stopApp()
+  })
+
   user_data <- user_data_real
   if (DEVELOPMENT == TRUE) {
     user_data <- user_data_demo
