@@ -11,6 +11,7 @@ library(tibble)
 source("config.r")
 source(paste0(basedir, "functions.r"))
 
+set.seed(123)
 # Set he maximum upload size
 options(shiny.maxRequestSize = 60 * 1024^2)
 # Silence warnings (I know what i'm doing)
@@ -48,9 +49,10 @@ myclusters_org <- list(
 
 shinyServer(function(input, output, session) {
   user_data_real <- reactiveValues(
-    collections = NULL,
+    collections = NULL, # Will be filled with cell types or the merges
     geneset = NULL,
     tissue_type = NULL,
+    pseudobulk_number = NULL, # Will be filled with the number of pseudobulks used
     music_error = "",
     deconv_error = "",
     upload_error = "No data uploaded (yet).",
@@ -66,6 +68,11 @@ shinyServer(function(input, output, session) {
     music_error = "",
     #  eval_results = readRDS(paste0(datadir,"cached_result_ground_thruth_eval.rds"))
   )
+
+  session$onSessionEnded(function() {
+    message("Session ended; stopping app.")
+    stopApp()
+  })
 
   user_data <- user_data_real
   if (DEVELOPMENT == TRUE) {
@@ -162,7 +169,7 @@ shinyServer(function(input, output, session) {
     myids <- get_selected(input$mytree, format = "names") %>% unlist()
     myids <- myids[myids %in% (cell_annotations %>% pull(level4))] %>% unique()
     # Only proceed if any IDS are left
-    req(myids)
+    user_data$collections <- list()
     for (myid in myids) {
       collection_name <- gsub(myid, pattern = "\\s+", replace = "_")
       user_data$collections[[collection_name]] <- myid
@@ -180,7 +187,6 @@ shinyServer(function(input, output, session) {
       pull(collection)
     print("Deleting")
 
-    print(mydat)
     for (mycollection in mydat) {
       user_data$collections[[mycollection]] <- NULL
     }
@@ -215,9 +221,12 @@ shinyServer(function(input, output, session) {
     }
     mydf <- bind_rows(mylist)
     user_data$collection_table <- mydf
-    # print(mydf)
-    DT::datatable(mydf, rownames = F, filter = "top")
-  })
+    DT::datatable(mydf, 
+      rownames = F, 
+      filter = "top",
+      options = list(pageLength = 100))
+  }
+)
 
   #### Remove DEGs ####
 
@@ -225,7 +234,6 @@ shinyServer(function(input, output, session) {
     #     output$unmatched_degs <- renderText({
     input_degs <- unlist(strsplit(input$inserted_degs, split = "\n"))
     input_degs <- input_degs %>% gsub(pattern = " ", replace = "")
-    #  print(input_degs)
     geneset <- row.names(so_small)
 
     matched <- input_degs[(input_degs %in% geneset)]
@@ -237,7 +245,6 @@ shinyServer(function(input, output, session) {
     str_unmatched <- paste0(unmatched, collapse = "<br>")
     output$unmatched_degs <- renderUI(HTML(str_unmatched))
     output$matched_degs <- renderUI(HTML(paste0(matched, collapse = "<br>")))
-    #         print(str_unmatched)
   })
 
   # observeEvents(input$goto_select_validate, {
@@ -268,10 +275,8 @@ shinyServer(function(input, output, session) {
     HTML(
       paste0("<b>Tissue type:</b> ", user_data$tissue_type),
       '<br>',
-      paste0(
-        "<b>Cell collections: </b>",
-        paste0(user_data$collections, collapse = "; ")
-      )
+      "<b>Cell collections: </b>",
+      selected_genes_formatter(user_data$collections)
     )
   })
 
@@ -306,7 +311,6 @@ shinyServer(function(input, output, session) {
     #
     gt <- create_ground_truth(so = so_small_sub, user_clusters = myclusters)
 
-    print(gt %>% pull(sample_id) %>% unique())
     message("Done creating ground truth")
     message("Subsetting Single Cell based on cell selection")
     lung.sce <- as.SingleCellExperiment(so_small_sub)
@@ -320,6 +324,7 @@ shinyServer(function(input, output, session) {
       user_data$tissue_type,
       ".csv"
     ))
+
     names(df)[1] <- "V1"
     lmx_bulk <- data.matrix(as_tibble(df) %>% column_to_rownames("V1"))
     #
@@ -344,7 +349,6 @@ shinyServer(function(input, output, session) {
 
         # This runs the actual pipeline
         myresults <- run_music_for_gt(so_small, user_data$tissue_type)
-        print(myresults[["ground_truth"]])
         tp <- eval_ground_truth(
           music_result = myresults[["music_results"]],
           ground_truth = myresults[["ground_truth"]]
@@ -411,6 +415,31 @@ shinyServer(function(input, output, session) {
     p
   })
 
+  output$download_mape <- downloadHandler(
+    # This function handles the downloading of the Mape results
+    filename = function() {
+      "UnBlender_deconv_evaluation.txt"
+    },
+    content = function(file) {
+      # Lmerge data
+      mape <- user_data$eval_results["mape"][[1]]
+      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor"))
+      uni_corr <- unique(corr)
+      tp <- mape %>% left_join(uni_corr, by="cluster_name")
+
+      # Write mape to table
+      write.table(tp, file, , sep="\t", quote=FALSE, row.names = FALSE)
+
+      # Create Analysis information (is appended to table txt file)
+      file_text = "# UnBlender analysis information: "
+      file_text = paste0(file_text, "\n# ",selected_genes_formatter(user_data$collections))
+      nmbr_unique_pseudobulks = length(user_data$eval_results["corr_df"][[1]] %>% ungroup() %>% distinct(sample_id) %>% pull(sample_id))
+      file_text = paste0(file_text, "\n# ", "Selected sample type: ", 
+                          user_data$tissue_type, " (", nmbr_unique_pseudobulks, " pseudobulk samples used)")
+      cat(file_text, file=file, append=T)
+    }
+  )
+
   output$gt_stats <- DT::renderDataTable({
     req(user_data$eval_results)
     mape <- user_data$eval_results[["mape"]]
@@ -437,9 +466,7 @@ shinyServer(function(input, output, session) {
   })
 
   output$prop_error <- DT::renderDataTable({
-    #print
     toshow <- user_data$eval_results[["prop_error"]] %>%
-      #  filter(cluster_name !="other") %>%
       dplyr::select(
         sample_id,
         cluster_name,
@@ -476,7 +503,6 @@ shinyServer(function(input, output, session) {
   })
 
   output$correlation_table <- DT::renderDataTable({
-    #print(user_data$eval_results)
     to_show <- user_data$eval_results[["corr_df"]] %>%
       dplyr::select(cluster_name, mycor) %>%
       distinct()
@@ -489,18 +515,13 @@ shinyServer(function(input, output, session) {
   })
 
   output$correlation_plot <- renderPlot({
-    #print(user_data$eval_results)
     req(input$gt_stats_rows_selected)
     tp2 <- user_data$gt_stats
-    #   print(tp2)
     collection_to_show <- tp2[input$gt_stats_rows_selected, ] %>%
       pull(cluster_name)
-    # print(collection_to_show)
     tp <- tp2 %>% filter(cluster_name == collection_to_show)
-    #    print(tp)
     corframe <- user_data$eval_results[["corr_df"]] %>%
       filter(cluster_name == collection_to_show)
-    #print(corframe)
     plot_corr_df(corframe, show_se = input$show_se, show_sample_ids = FALSE)
   })
 
@@ -509,7 +530,6 @@ shinyServer(function(input, output, session) {
   ###### Data upload ######
   output$no_deconvolution_results_error <- renderUI({
     x <- ""
-    #  print(user_data$music_results)
     if (is.null(user_data$music_results)) {
       x <- no_deconvolution_results()
     }
@@ -532,7 +552,6 @@ shinyServer(function(input, output, session) {
       filename <- input$user_bulk_file$datapath
       print(filename)
       myres <- grepl(filename, pattern = "\\.csv")
-      # print(myres)
       if (!myres) {
         err <- 1
         user_data$upload_error <- error_message("Please upload a csv file.")
@@ -636,7 +655,6 @@ shinyServer(function(input, output, session) {
   })
 
   output$deconv_error <- renderUI({
-    print(user_data$deconv_error)
     user_data$deconv_error
   })
 
@@ -654,7 +672,6 @@ shinyServer(function(input, output, session) {
         so_small_sub <- create_subset_so(so_small, user_data$tissue_type)
         # },
         #error=function(e){
-        # print(e)
         #user_data$music_error <- "Wynand"
         # })
 
@@ -677,11 +694,9 @@ shinyServer(function(input, output, session) {
         df$duprow <- duplicated(df$gene)
 
         df2 <- df %>% dplyr::filter(duprow == FALSE, !is.na(gene))
-        # print(df2[1:4, 1:4])
         lmx_bulk <- as.matrix(
           df2 %>% dplyr::select(-duprow) %>% column_to_rownames("gene")
         )
-        # print(lmx_bulk[1:4, 1:4])
 
         # lmx_bulk <- data.matrix(as_tibble(df) %>% column_to_rownames("V1"))
 
@@ -709,12 +724,8 @@ shinyServer(function(input, output, session) {
             )
           },
           error = function(e) {
-            # return a safeError if a parsing error occurs
-            # print("Here is the safe error")
             err <- 1
             user_data$deconv_error <- deconv_error(safeError(e))
-            # print(safeError(e))
-            # print("This was the safer error")
             req(err == 0)
             stop(safeError(e))
           }
@@ -754,7 +765,7 @@ shinyServer(function(input, output, session) {
 
   output$download_music_results <- downloadHandler(
     filename = function() {
-      "music_results.xlsx"
+      "deconvolution_results.xlsx"
     },
     content = function(file) {
       tp <- user_data$music_results
@@ -769,7 +780,6 @@ shinyServer(function(input, output, session) {
     tp <- user_data$music_results
     toshow <- rawdata_music(tp, pivot_it = input$pivot_music)
     mycolnames <- toshow %>% dplyr::select(!any_of(c("cell_type", "sample_id")))
-    print(names(mycolnames))
     DT::datatable(
       toshow,
       rownames = F,
@@ -779,26 +789,28 @@ shinyServer(function(input, output, session) {
       formatRound(columns = names(mycolnames), digits = 3)
   })
 
-  output$dotplot <- renderPlot({
-    req(user_data$music_results)
-    tp <- user_data$music_results
-    p <- dotplot_music(tp)
-    p
-  })
+  # output$dotplot <- renderPlot({
+  #   req(user_data$music_results)
+  #   tp <- user_data$music_results
+  #   p <- dotplot_music(tp)
+  #   p
+  # })
 
-  output$heatmap <- renderPlot({
-    req(user_data$music_results)
-    tp <- user_data$music_results
-    p <- heatmap_music(tp, flipit = input$flip_heatmap)
-    p
-  })
+  # output$heatmap <- renderPlot({
+  #   req(user_data$music_results)
+  #   tp <- user_data$music_results
+  #   p <- heatmap_music(tp, flipit = input$flip_heatmap)
+  #   p
+  # })
 
-  output$cibersort_stackedbar <- renderPlot({
+  output$cibersort_stackedbar <- renderPlotly({
     # stacked barchart
     req(user_data$music_results)
     tp <- user_data$music_results
-    # p <- stacked_bar_music(tp, flipit = input$flip_stackedbar)
     p <- stacked_bar_music(tp, flipit = TRUE)
-    p
+    ggplotly(p) %>% 
+      plotly::layout(
+        yaxis = list(showticklabels = FALSE, ticks = "", showline = FALSE)
+      )
   })
 })

@@ -3,10 +3,30 @@ library(tidyr)
 library(dplyr)
 library(SingleCellExperiment)
 library(MuSiC)
+library(plotly)
 
 ##### HTML functions ######
 
 #theme_cyberlung
+
+
+selected_genes_formatter <- function(collection){
+  #' This function pastes all selected genes provided in the collection together. 
+  #' It formats rows with multiple genes the following way: merge_name(gene1, gene2, gene3)
+  gene_list = c()
+  for (i in 1:length(collection)){
+      if (length(collection[[i]]) > 1){
+          merged_genes = paste0(collection[[i]], collapse = ", " )
+          formatted_text = paste0(names(collection[i]), "(", merged_genes, ")")
+          gene_list = c(gene_list, formatted_text)
+      }
+      else{
+          gene_list = c(gene_list, collection[[i]])
+      }
+  }
+  gene_string = paste(gene_list, collapse = "; ")
+  return (gene_string)
+}
 
 no_tissue_selected_error <- function(x) {
   error_message("Please select a tissue for building a cell collection.")
@@ -143,11 +163,8 @@ music_prop2 <- function(
   normalize = FALSE,
   ...
 ) {
-  print(bulk.mtx[1:4, 1:2])
   bulk.gene = rownames(bulk.mtx)[rowMeans(bulk.mtx) != 0]
-  print(bulk.gene[1:10])
   bulk.mtx = bulk.mtx[bulk.gene, ]
-  print(bulk.mtx[1:4, 1:4])
   if (is.null(markers)) {
     sc.markers = bulk.gene
   } else {
@@ -540,7 +557,6 @@ create_input_sce <- function(start_sce, new_clusters) {
     obj = new_clusters %>% pull(cluster_name),
     nm = new_clusters %>% pull(cluster_member)
   )
-  # print(toreplace)
   tomatch <- tibble(level4 = start_sce$ann_level_4)
   tomatch <- tomatch %>%
     dplyr::mutate(level4 = gsub(level4, pattern = "^\\d_", replace = "")) %>%
@@ -550,7 +566,6 @@ create_input_sce <- function(start_sce, new_clusters) {
       cluster_name = ifelse(is.na(cluster_name), "other", cluster_name)
     )
 
-  #print(tomatch)
   start_sce$new_clusters <- tomatch %>% pull(cluster_name)
   start_sce
 }
@@ -558,7 +573,6 @@ create_input_sce <- function(start_sce, new_clusters) {
 ####### SUBSETTING ############
 create_subset_so <- function(so_small, mytissue) {
   # message("Subsetting")
-  #   print(mytissue)
   #  mytissue <- user_data$tissue_type
 
   print(paste0("Subsetting for ", mytissue))
@@ -636,8 +650,6 @@ create_ground_truth <- function(so, tissue, user_clusters, sample_type) {
 }
 
 eval_ground_truth <- function(music_results, ground_truth) {
-  #print("I am in function eval_ground_truth")
-  #print(ground_truth)
   music_results <- music_results$Est.prop.weighted
   samples_pseudobulk <- row.names(music_results)
   samples_gt <- ground_truth %>% pull(sample_id) %>% unique()
@@ -691,7 +703,10 @@ eval_ground_truth <- function(music_results, ground_truth) {
     )
 
   corr_df <- eval_results %>%
-    filter(percentage_true < iqr_high + H, percentage_true > iqr_low - H, ) %>%
+    filter(
+      percentage_true < iqr_high + H, 
+      percentage_true > iqr_low - H, 
+    ) %>%
     group_by(cluster_name) %>%
     dplyr::mutate(
       mycor = floor(100 * cor(percentage_found, percentage_true)) / 100
@@ -706,22 +721,19 @@ plot_corr_df <- function(
   show_sample_ids = FALSE,
   show_se = FALSE
 ) {
-  #print(correlation_df)
   p <- ggplot(correlation_df, aes(x = percentage_true, y = percentage_found))
-  # p <- p + geom_line()
   p <- p + geom_point(size = 5, alpha = 0.6, color = "#0000ff")
   if (show_sample_ids == TRUE) {
     p <- p + geom_text(aes(label = sample_id), size = 5)
   }
   p <- p + geom_smooth(method = 'lm', formula = y ~ x, se = show_se)
   p <- p + facet_wrap(. ~ paste0(cluster_name, " : ", mycor), scales = "free")
-  # p <-p + theme_cyberlung
   p <- p +
     labs(title = "Correlation", y = "Estimated fraction", x = "True fraction")
   p <- p + theme_bw()
   p <- p + theme(axis.text = element_text(size = 12))
   p <- p + theme(strip.text = element_text(size = 14))
-  p <- p + theme(axis.title = element_text(size = 14)) +
+  p <- p + theme(axis.title = element_text(size = 14)) 
   p
 }
 
@@ -800,7 +812,6 @@ plot_decision_mape <- function(mape, flip = FALSE) {
 }
 
 ####### MUSIC EVALUATION VISUALISATION #######
-
 rawdata_music <- function(x, pivot_it = F) {
   x <- x %>% 
     dplyr::select(-resname)

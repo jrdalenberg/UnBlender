@@ -158,13 +158,6 @@ body <- dashboardBody(
               label = "Tissue type",
               choices = tissues
             ),
-            # shiny::actionButton(
-            #   "confirm_tissue",
-            #   label = "Select Tissue",
-            #   icon = icon("check"),
-            #   class = "btn-primary",
-            #   style = "color: white; background-color: #28a745; border-color: #28a745;",
-            # ),
             # functionality for moving to next page.
             shiny::actionButton(
               "goto_select_celltypes",
@@ -455,7 +448,7 @@ body <- dashboardBody(
                     "aggregate_mape_plot"
                   )
                 )
-              )
+              ),
             ),
             column(
               6,
@@ -501,6 +494,7 @@ body <- dashboardBody(
         icon = icon("angle-left"),
         class = "btn-primary",
       ),
+      downloadButton("download_mape", "Download"),
       shiny::actionButton(
         "goto_celltype_deconvolution",
         label = "Deconvolute celltypes",
@@ -561,14 +555,20 @@ This data set contains 91 samples from bronchial biopsies from moderate and seve
         tabPanel(
           "StackedBar",
           # checkboxInput("flip_stackedbar", "Flip chart"),
-          jqui_resizable(plotOutput("cibersort_stackedbar"))
+          # jqui_resizable(plotOutput("cibersort_stackedbar"))
+          jqui_resizable(plotlyOutput("cibersort_stackedbar",
+          height = "900px"))
         ),
-
-        tabPanel(
-          "Heatmap",
-          checkboxInput("flip_heatmap", "Flip axis"),
-          jqui_resizable(plotOutput("heatmap"))
-        ),
+        # tabPanel(
+        #   "Heatmap",
+        #   checkboxInput("flip_heatmap", "Flip axis"),
+        #   jqui_resizable(plotOutput("dotplot"))
+        # ),
+        # tabPanel(
+        #   "Heatmap",
+        #   checkboxInput("flip_heatmap", "Flip axis"),
+        #   jqui_resizable(plotOutput("heatmap"))
+        # ),
         tabPanel(
           "Data",
           fluidRow(
