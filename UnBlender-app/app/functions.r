@@ -711,12 +711,12 @@ eval_ground_truth <- function(music_results, ground_truth) {
     group_by(cluster_name) %>%
       dplyr::mutate(
         mycor = case_when(
-          !outlier ~ floor(100 * cor(percentage_found[!outlier], percentage_true[!outlier])) / 100
+          !outlier ~ floor(100 * suppressWarnings(cor(percentage_found[!outlier], percentage_true[!outlier]))) / 100
         )
       ) %>% 
     group_by(cluster_name) %>%
       dplyr::mutate(
-          mycor_over_outliers = floor(100 * cor(percentage_found, percentage_true)) / 100
+          mycor_over_outliers = floor(100 * suppressWarnings(cor(percentage_found, percentage_true))) / 100
       )
   
   # Add if the standard deviation = 0 per cell type 
