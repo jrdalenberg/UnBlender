@@ -280,6 +280,14 @@ shinyServer(function(input, output, session) {
     )
   })
 
+  output$correlation_warning_text <- renderUI({
+    tp <- get_correlations_per_celltype(user_data$eval_results$corr_df)
+    names <- list(tp$cluster_name[is.na(tp$mycor)])
+    HTML(
+      paste0( paste0(unlist(names), collapse = ", "), " are missing due to a standard deviation of 0" )
+    )
+  })
+
   output$evaluate_button <- renderUI({
     mydisabled <- FALSE
     if (is.null(user_data$tissue_type)) {
@@ -414,17 +422,23 @@ shinyServer(function(input, output, session) {
     )
     p
   })
-
+  
+  
+  # This function handles the downloading of the Mape results
   output$download_mape <- downloadHandler(
-    # This function handles the downloading of the Mape results
     filename = function() {
       "UnBlender_deconv_evaluation.txt"
     },
     content = function(file) {
       # Lmerge data
       mape <- user_data$eval_results["mape"][[1]]
-      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor"))
-      uni_corr <- unique(corr)
+      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor", "mycor_over_outliers"))
+      uni_corr <- unique(corr) %>%
+                    group_by(cluster_name) %>%
+                    summarise(
+                      correlation = mean(mycor, na.rm=T),
+                      correlation_over_outliers = mean(mycor_over_outliers)
+                    )
       tp <- mape %>% left_join(uni_corr, by="cluster_name")
 
       # Write mape to table
@@ -444,8 +458,11 @@ shinyServer(function(input, output, session) {
     req(user_data$eval_results)
     mape <- user_data$eval_results[["mape"]]
     mycor <- user_data$eval_results[["corr_df"]] %>%
-      dplyr::select(cluster_name, mycor) %>%
-      distinct()
+      dplyr::select(cluster_name, mycor, mycor_over_outliers) %>%
+      summarise(
+        mycor = mean(mycor, na.rm = TRUE),
+        mycor_over_outliers  = mean(mycor_over_outliers)
+      ) 
 
     toshow <- mape %>% inner_join(mycor, by = "cluster_name")
     user_data$gt_stats <- toshow
@@ -454,7 +471,8 @@ shinyServer(function(input, output, session) {
       dplyr::rename(
         "Collection" = cluster_name,
         "Correlation" = mycor,
-        "Error" = mape
+        "Error" = mape,
+        "Correlation over Outliers" = mycor_over_outliers
       )
 
     DT::datatable(
@@ -488,15 +506,11 @@ shinyServer(function(input, output, session) {
   })
 
   output$mape <- DT::renderDataTable({
-    toshow <- user_data$eval_results[["mape"]] #%>%
-    # filter(cluster_name !="other")
-    #select(cluster_name, or)
+    toshow <- user_data$eval_results[["mape"]] 
     toshow <- toshow %>%
       dplyr::rename(
         collection = cluster_name,
         "mean proportional error" = mape,
-        #"fraction found"= percentage_found,
-        #fraction present" =percentage_true
       )
     DT::datatable(toshow, rownames = FALSE) %>%
       formatSignif(columns = c("mean proportional error"))
@@ -576,11 +590,6 @@ shinyServer(function(input, output, session) {
     )
     names(df)[1] <- "gene"
     user_data$bulk <- df
-    #  toshow <- df[1:5,1:3]
-    #   DT::datatable(toshow, rownames = F, options = list(dom="",ordering=F))  %>%
-    #     formatSignif(columns = c(2:3))
-
-    #})
   })
 
   shiny::observeEvent(input$goto_celltype_deconvolution,{

@@ -701,18 +701,34 @@ eval_ground_truth <- function(music_results, ground_truth) {
       iqr_low = quantile(percentage_true, probs = .25) %>% as.numeric(),
       H = 1.5 * IQR(percentage_true)
     )
-
+ 
+  # Calculate the correlation. Both over and not over the outliers.
   corr_df <- eval_results %>%
-    filter(
-      percentage_true < iqr_high + H, 
-      percentage_true > iqr_low - H, 
-    ) %>%
+    mutate( outlier = !
+      (percentage_true < iqr_high + H) & 
+      (percentage_true > iqr_low - H)
+      ) %>% 
     group_by(cluster_name) %>%
-    dplyr::mutate(
-      mycor = floor(100 * cor(percentage_found, percentage_true)) / 100
-    )
+      dplyr::mutate(
+        mycor = case_when(
+          !outlier ~ floor(100 * suppressWarnings(cor(percentage_found[!outlier], percentage_true[!outlier]))) / 100
+        )
+      ) %>% 
+    group_by(cluster_name) %>%
+      dplyr::mutate(
+          mycor_over_outliers = floor(100 * suppressWarnings(cor(percentage_found, percentage_true))) / 100
+      )
+  
+  # Add if the standard deviation = 0 per cell type 
+  # This causes missing points in the plot later
+  no_standard_deviation <- corr_df %>%
+    group_by(cluster_name) %>%
+    summarise(all_same = sd(percentage_found)) %>%
+    mutate(no_standard_deviation = if_else(all_same==0 | (is.na(all_same)), TRUE, FALSE)) %>%
+    select(cluster_name, no_standard_deviation)
+  corr_df <- dplyr::full_join(corr_df, no_standard_deviation, by="cluster_name")
 
-  list(prop_error = eval_results, mape = mape, corr_df = corr_df)
+  return(list(prop_error = eval_results, mape = mape, corr_df = corr_df))
 }
 
 
@@ -721,15 +737,24 @@ plot_corr_df <- function(
   show_sample_ids = FALSE,
   show_se = FALSE
 ) {
+  # Add color column
+  correlation_df <- correlation_df %>%
+    dplyr::select(cluster_name, percentage_true, percentage_found, mycor, outlier) %>%
+    mutate(color = ifelse(outlier, "Outlier" ,"Non Outlier"))
+
   p <- ggplot(correlation_df, aes(x = percentage_true, y = percentage_found))
-  p <- p + geom_point(size = 5, alpha = 0.6, color = "#0000ff")
+  p <- p + geom_point(size = 5, alpha = 0.6, aes(color = color))
   if (show_sample_ids == TRUE) {
     p <- p + geom_text(aes(label = sample_id), size = 5)
   }
   p <- p + geom_smooth(method = 'lm', formula = y ~ x, se = show_se)
-  p <- p + facet_wrap(. ~ paste0(cluster_name, " : ", mycor), scales = "free")
-  p <- p +
-    labs(title = "Correlation", y = "Estimated fraction", x = "True fraction")
+  # Add title take first of sorted to prevent two plots one with na one with cor.
+  p <- p + facet_wrap(. ~ paste0(cluster_name, " : ", sort(mycor)[1]), scales = "free")
+  p <- p + labs(title = "Correlation", y = "Estimated fraction", x = "True fraction")
+  
+  p <- p + scale_color_manual(values = c("Non Outlier" = "#0000ff", "Outlier" = outlier_color),
+                              name = "Outlier") 
+
   p <- p + theme_bw()
   p <- p + theme(axis.text = element_text(size = 12))
   p <- p + theme(strip.text = element_text(size = 14))
@@ -737,14 +762,29 @@ plot_corr_df <- function(
   p
 }
 
-plot_decision_cor <- function(correlation_df, flip = FALSE) {
-  tp <- correlation_df %>% 
-    dplyr::select(cluster_name, mycor) %>% 
-    distinct()
 
-  p <- ggplot(tp, 
-    aes(x = reorder(cluster_name, mycor),
-    y = mycor)) +
+get_correlations_per_celltype <- function(correlation_df){
+  tp <- correlation_df %>%
+    dplyr::group_by(cluster_name) %>%
+    dplyr::summarise(
+      avg_cor = mean(mycor, na.rm = TRUE),
+      avg_cor_over_outliers = mean(mycor_over_outliers, na.rm = TRUE)
+    ) %>%
+    dplyr::mutate(outlier = dplyr::if_else(is.na(avg_cor), TRUE, FALSE)) %>%
+    dplyr::mutate(mycor = dplyr::if_else(is.na(avg_cor), avg_cor_over_outliers, avg_cor)) %>%
+    dplyr::select(cluster_name, mycor, outlier)
+  return (tp)
+}
+
+plot_decision_cor <- function(correlation_df, flip = FALSE) {
+  tp <- get_correlations_per_celltype(correlation_df)
+
+  p <- ggplot(
+    tp, 
+    aes(
+      x = reorder(cluster_name, mycor),
+      y = mycor,
+      color = outlier)) +
     annotate(
       geom = 'rect',
       ymin = 0.7,
@@ -764,7 +804,8 @@ plot_decision_cor <- function(correlation_df, flip = FALSE) {
       alpha = 1
     ) + 
     geom_point(size = 5) + 
-    labs(x = "", y = "Correlation") +
+    labs(x = "", y = "Correlation", color= "Outlier") +
+    scale_color_manual(values = c(`FALSE` = "black", `TRUE` = outlier_color)) +
     theme_bw() +
     theme(axis.text = element_text(size = 12)) + 
     theme(strip.text = element_text(size = 14)) +

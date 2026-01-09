@@ -461,6 +461,9 @@ body <- dashboardBody(
                   plotOutput(
                     "aggregate_cor_plot"
                   )
+                ),
+                uiOutput(
+                  "correlation_warning_text"
                 )
               )
             )
