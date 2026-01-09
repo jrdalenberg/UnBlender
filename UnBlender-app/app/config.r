@@ -4,6 +4,7 @@ this_file <- normalizePath("config.r")
 # Get the directory containing the file
 current_dir <- paste0(dirname(this_file), '/')
 
+outlier_color <- "darkgray"
 
 basedir        <- current_dir
 datadir        <- paste0(basedir, 'datafiles/')

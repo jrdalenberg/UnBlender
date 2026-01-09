@@ -414,9 +414,10 @@ shinyServer(function(input, output, session) {
     )
     p
   })
-
+  
+  
+  # This function handles the downloading of the Mape results
   output$download_mape <- downloadHandler(
-    # This function handles the downloading of the Mape results
     filename = function() {
       "UnBlender_deconv_evaluation.txt"
     },
@@ -444,8 +445,11 @@ shinyServer(function(input, output, session) {
     req(user_data$eval_results)
     mape <- user_data$eval_results[["mape"]]
     mycor <- user_data$eval_results[["corr_df"]] %>%
-      dplyr::select(cluster_name, mycor) %>%
-      distinct()
+      dplyr::select(cluster_name, mycor, mycor_over_outliers) %>%
+      summarise(
+        mycor = mean(mycor, na.rm = TRUE),
+        mycor_over_outliers  = mean(mycor_over_outliers)
+      ) 
 
     toshow <- mape %>% inner_join(mycor, by = "cluster_name")
     user_data$gt_stats <- toshow
@@ -454,7 +458,8 @@ shinyServer(function(input, output, session) {
       dplyr::rename(
         "Collection" = cluster_name,
         "Correlation" = mycor,
-        "Error" = mape
+        "Error" = mape,
+        "Correlation over Outliers" = mycor_over_outliers
       )
 
     DT::datatable(
