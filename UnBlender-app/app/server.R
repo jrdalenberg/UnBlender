@@ -424,8 +424,14 @@ shinyServer(function(input, output, session) {
     content = function(file) {
       # Lmerge data
       mape <- user_data$eval_results["mape"][[1]]
-      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor"))
-      uni_corr <- unique(corr)
+      corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor", "mycor_over_outliers"))
+      # write.csv(user_data$eval_results["corr_df"][[1]], "download_file.csv", row.names = FALSE) # save so i can work with the data
+      uni_corr <- unique(corr) %>%
+                    group_by(cluster_name) %>%
+                    summarise(
+                      correlation = mean(mycor, na.rm=T),
+                      correlation_over_outliers = mean(mycor_over_outliers)
+                    )
       tp <- mape %>% left_join(uni_corr, by="cluster_name")
 
       # Write mape to table
