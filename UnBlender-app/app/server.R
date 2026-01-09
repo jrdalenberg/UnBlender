@@ -280,6 +280,14 @@ shinyServer(function(input, output, session) {
     )
   })
 
+  output$correlation_warning_text <- renderUI({
+    tp <- get_correlations_per_celltype(user_data$eval_results$corr_df)
+    names <- list(tp$cluster_name[is.na(tp$mycor)])
+    HTML(
+      paste0( paste0(unlist(names), collapse = ", "), " are missing due to a standard deviation of 0" )
+    )
+  })
+
   output$evaluate_button <- renderUI({
     mydisabled <- FALSE
     if (is.null(user_data$tissue_type)) {
@@ -425,7 +433,6 @@ shinyServer(function(input, output, session) {
       # Lmerge data
       mape <- user_data$eval_results["mape"][[1]]
       corr <- user_data$eval_results["corr_df"][[1]] %>% select(c("cluster_name", "mycor", "mycor_over_outliers"))
-      # write.csv(user_data$eval_results["corr_df"][[1]], "download_file.csv", row.names = FALSE) # save so i can work with the data
       uni_corr <- unique(corr) %>%
                     group_by(cluster_name) %>%
                     summarise(
@@ -499,15 +506,11 @@ shinyServer(function(input, output, session) {
   })
 
   output$mape <- DT::renderDataTable({
-    toshow <- user_data$eval_results[["mape"]] #%>%
-    # filter(cluster_name !="other")
-    #select(cluster_name, or)
+    toshow <- user_data$eval_results[["mape"]] 
     toshow <- toshow %>%
       dplyr::rename(
         collection = cluster_name,
         "mean proportional error" = mape,
-        #"fraction found"= percentage_found,
-        #fraction present" =percentage_true
       )
     DT::datatable(toshow, rownames = FALSE) %>%
       formatSignif(columns = c("mean proportional error"))
@@ -587,11 +590,6 @@ shinyServer(function(input, output, session) {
     )
     names(df)[1] <- "gene"
     user_data$bulk <- df
-    #  toshow <- df[1:5,1:3]
-    #   DT::datatable(toshow, rownames = F, options = list(dom="",ordering=F))  %>%
-    #     formatSignif(columns = c(2:3))
-
-    #})
   })
 
   shiny::observeEvent(input$goto_celltype_deconvolution,{

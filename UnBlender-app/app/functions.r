@@ -701,19 +701,7 @@ eval_ground_truth <- function(music_results, ground_truth) {
       iqr_low = quantile(percentage_true, probs = .25) %>% as.numeric(),
       H = 1.5 * IQR(percentage_true)
     )
-
-  # Here the correlation is calculated after the outliers are removed.
-  # corr_df <- eval_results %>%
-  #   filter(
-  #     percentage_true < iqr_high + H, 
-  #     percentage_true > iqr_low - H, 
-  #   ) %>%
-  #   group_by(cluster_name) %>%
-  #   dplyr::mutate(
-  #     mycor = floor(100 * cor(percentage_found, percentage_true)) / 100
-  #   )
-  # write.csv(eval_results, "output.csv", row.names = FALSE) # save so i can work with the data
-  
+ 
   # Calculate the correlation. Both over and not over the outliers.
   corr_df <- eval_results %>%
     mutate( outlier = !
@@ -749,17 +737,9 @@ plot_corr_df <- function(
   show_sample_ids = FALSE,
   show_se = FALSE
 ) {
-  # write.csv(correlation_df, "../output3.csv", row.names = FALSE) # save so i can work with the data
-  # delete entries with nans as correlation if there are same entries without nan.
+  # Add color column
   correlation_df <- correlation_df %>%
     dplyr::select(cluster_name, percentage_true, percentage_found, mycor, outlier) %>%
-    # group_by(cluster_name) %>%
-    # filter(
-    #   !is.na(mycor) | all(is.na(mycor))
-    # ) %>%
-    # ungroup() %>%
-    # Add color column
-    # mutate(color = ifelse(outlier, outlier_color ,"#0000ff"))
     mutate(color = ifelse(outlier, "Outlier" ,"Non Outlier"))
 
   p <- ggplot(correlation_df, aes(x = percentage_true, y = percentage_found))
@@ -782,13 +762,8 @@ plot_corr_df <- function(
   p
 }
 
-plot_decision_cor <- function(correlation_df, flip = FALSE) {
-  print(correlation_df)
-  # tp <- correlation_df %>% 
-  #   dplyr::select(cluster_name, mycor) %>% 
-  #   filter(!is.na(mycor)) %>% # Since some clusters can be an outlier why others aren't all
-  #   distinct()
 
+get_correlations_per_celltype <- function(correlation_df){
   tp <- correlation_df %>%
     dplyr::group_by(cluster_name) %>%
     dplyr::summarise(
@@ -798,8 +773,13 @@ plot_decision_cor <- function(correlation_df, flip = FALSE) {
     dplyr::mutate(outlier = dplyr::if_else(is.na(avg_cor), TRUE, FALSE)) %>%
     dplyr::mutate(mycor = dplyr::if_else(is.na(avg_cor), avg_cor_over_outliers, avg_cor)) %>%
     dplyr::select(cluster_name, mycor, outlier)
+  return (tp)
+}
 
-p <- ggplot(
+plot_decision_cor <- function(correlation_df, flip = FALSE) {
+  tp <- get_correlations_per_celltype(correlation_df)
+
+  p <- ggplot(
     tp, 
     aes(
       x = reorder(cluster_name, mycor),
