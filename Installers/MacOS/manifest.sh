@@ -26,7 +26,7 @@ curl -L "https://github.com/jrdalenberg/UnBlender/archive/refs/heads/remove_unus
 
 ## Extracting files
 echo "3️⃣\tExtracting dashboard!"
-unzip main.zip
+unzip -X main.zip
 rm main.zip
 
 ## Removing reminants
