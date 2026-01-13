@@ -31,7 +31,7 @@ rm main.zip
 
 ## Removing reminants
 mv UnBlender-remove_unused_packages/Unblender-app .
-yes | rm -rf UnBlender-remove_unused_packages
+yes | rm -rf UnBlender-main
 
 # ======= Installing CRAN packages =======
 echo "4️⃣\tInstalling required CRAN packages"
