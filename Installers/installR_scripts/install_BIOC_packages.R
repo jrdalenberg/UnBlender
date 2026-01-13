@@ -8,6 +8,6 @@ if (!require("BiocManager", quietly = TRUE))
 BiocManager::install()
 
 BiocManager::install(
-    c("SingleCellExperiment", "TOAST"),
+    c("GenomeInfoDb", "SingleCellExperiment", "TOAST"),
     update=FALSE,
     ask=FALSE)
