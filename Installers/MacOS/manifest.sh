@@ -22,7 +22,7 @@ echo "\tInstalling libgit2"
 
 # ======= Getting App repository =========
 echo "2️⃣\tGetting latest dashboard files from repo"
-curl -L "https://github.com/jrdalenberg/UnBlender/archive/refs/heads/remove_unused_packages.zip" -o main.zip
+curl -L "https://github.com/jrdalenberg/UnBlender/archive/refs/heads/main.zip" -o main.zip
 
 ## Extracting files
 echo "3️⃣\tExtracting dashboard!"
